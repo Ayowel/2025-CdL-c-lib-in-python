@@ -1,0 +1,156 @@
+= C library integration in Python
+include::.asciidoctorconfig[]
+
+== What can we get fom the lib's file ?
+
+=== Defines
+
+[source, c]
+--
+#define PI 3.14159265359
+#define ternary(cond, if_true, if_false) (cond?if_true:if_false)
+--
+
+[%step]
+No
+
+[.notes]
+--
+Define macros are interpreted by the preprocessor before any.
+Do not use custom defines for PI, reuse the definition in math.h instead.
+--
+
+=== Typedefs
+
+[source, h]
+--
+typedef void* Handle;
+--
+
+[%step]
+No
+
+[.notes]
+--
+
+--
+
+=== Structures
+
+[source, h]
+--
+struct linked_list {
+    int value;
+    struct linked_list* next;
+};
+--
+
+[%step]
+No
+
+=== Variables
+
+[source, h]
+--
+include::resources/code/01_simple_constant.h[]
+--
+
+[source, c]
+--
+include::resources/code/01_simple_constant.c[tag=const]
+--
+
+[%step]
+Yes
+
+[.notes]
+--
+
+--
+
+=== Functions ?
+
+[source, h]
+--
+include::resources/code/00_simple_print.h[]
+--
+
+[source, c]
+--
+include::resources/code/00_simple_print.c[tag=function]
+--
+
+[%step]
+Yes
+
+== Use the lib
+
+[step=1]
+Use ctypes
+
+[step=2]
+That's it
+
+=== Load it
+
+[source, py]
+--
+include::resources/code/00_simple_print.py[tag=load_dll]
+--
+
+=== Call it
+
+[source, c]
+--
+include::resources/code/00_simple_print.c[tag=function]
+--
+
+[source%step, py]
+--
+include::resources/code/00_simple_print.py[tag=funccall]
+--
+
+
+[quote%step]
+--
+include::resources/code/00_simple_print.out[]
+--
+
+=== Read it
+
+[source, c]
+--
+include::resources/code/01_simple_constant.c[tag=const]
+--
+
+[source%step, py]
+--
+include::resources/code/01_simple_constant.py[tag=dll_resolve]
+--
+
+[quote%step]
+--
+include::resources/code/01_simple_constant.out[lines=1]
+--
+
+=== Read it!
+
+[source, py]
+--
+include::resources/code/01_simple_constant.py[tag=int_resolve]
+--
+
+[quote%step]
+--
+include::resources/code/01_simple_constant.out[lines=2]
+--
+
+[source%step, py, options=wrap]
+--
+include::resources/code/01_simple_constant.py[tag=cast_resolve]
+--
+
+[quote%step]
+--
+include::resources/code/01_simple_constant.out[lines=3]
+--
