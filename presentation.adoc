@@ -94,6 +94,28 @@ include::resources/code/00_simple_lib.c[tag=function]
 [%step]
 Yes
 
+=== A look in the DLL
+
+[source, bash]
+--
+nm -gD my_lib.so
+--
+
+[quote%step]
+--
+include::resources/code/00_simple_lib.dump[]
+--
+
+[.notes]
+--
+The `nm` tools allows us to take a peek at the symbols table in a library's file. This symbols table contains all the entries we can reference in the DLL.
+
+In the output, the first column is the symbol's value (e.g.: a pointer to the actual data or function's instructions' location), the second is it's type (e.g.: `T` stands for text, which is usually code/functions, while `R` stands for read-only data).
+
+The output of this command can be used to quickly discover undocummented functions and attributes, though figuring out their parameters can be a challenge.
+Here, the command shows the `normalized_radians_list_item` function that makes use of the define and struct above.
+--
+
 == Use the lib
 
 [step=1]
