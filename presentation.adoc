@@ -17,8 +17,7 @@ endif::live-presentation[]
 
 [source, c]
 --
-#define PI 3.14159265359
-#define ternary(cond, if_true, if_false) (cond?if_true:if_false)
+include::resources/code/00_simple_lib.h[tag=defines]
 --
 
 [%step]
@@ -34,7 +33,7 @@ Do not use custom defines for PI, reuse the definition in math.h instead.
 
 [source, h]
 --
-typedef void* Handle;
+include::resources/code/00_simple_lib.h[tag=typedef]
 --
 
 [%step]
@@ -49,25 +48,27 @@ No
 
 [source, h]
 --
-struct linked_list {
-    int value;
-    struct linked_list* next;
-};
+include::resources/code/00_simple_lib.h[tag=struct]
 --
 
 [%step]
 No
 
+[.notes]
+--
+
+--
+
 === Variables
 
 [source, h]
 --
-include::resources/code/01_simple_constant.h[]
+include::resources/code/00_simple_lib.h[tag=const]
 --
 
 [source, c]
 --
-include::resources/code/01_simple_constant.c[tag=const]
+include::resources/code/00_simple_lib.c[tag=const]
 --
 
 [%step]
@@ -78,16 +79,16 @@ Yes
 
 --
 
-=== Functions ?
+=== Functions
 
 [source, h]
 --
-include::resources/code/00_simple_print.h[]
+include::resources/code/00_simple_lib.h[tag=function]
 --
 
 [source, c]
 --
-include::resources/code/00_simple_print.c[tag=function]
+include::resources/code/00_simple_lib.c[tag=function]
 --
 
 [%step]
@@ -98,69 +99,102 @@ Yes
 [step=1]
 Use ctypes
 
-[step=2]
-That's it
+[.small, step=2]
+(That's it)
 
 === Load it
 
-[source, py]
+[source, py, indent=0]
 --
-include::resources/code/00_simple_print.py[tag=load_dll]
+include::resources/code/00_simple_lib.py[tag=load_dll]
+--
+
+[.notes]
+--
+As long as you know the path of the .dll or .so file for your system, loading said DLL in-memory for use by your program is as simple as a single function call.
 --
 
 === Call it
 
 [source, c]
 --
-include::resources/code/00_simple_print.c[tag=function]
+include::resources/code/00_simple_lib.c[tag=function]
 --
 
-[source%step, py]
+[source%step, py, indent=0]
 --
-include::resources/code/00_simple_print.py[tag=funccall]
+include::resources/code/00_simple_lib.py[tag=funccall]
 --
-
 
 [quote%step]
 --
-include::resources/code/00_simple_print.out[]
+include::resources/code/00_simple_lib.out[lines=1]
 --
 
-=== Read it
+[.notes]
+--
+Getting back to our library's hello function, now that we know how to load a DLL, we can call it.
+
+Ctypes is functions oriented, which makes it very easy to call simple functions simply by referencing their in-DLL name.
+
+This will result in the expected message being written to the CLI.
+--
+
+=== Read it?
 
 [source, c]
 --
-include::resources/code/01_simple_constant.c[tag=const]
+include::resources/code/00_simple_lib.c[tag=const]
 --
 
-[source%step, py]
+[source%step, py, indent=0]
 --
-include::resources/code/01_simple_constant.py[tag=dll_resolve]
+include::resources/code/00_simple_lib.py[tag=dll_resolve]
 --
 
 [quote%step]
 --
-include::resources/code/01_simple_constant.out[lines=1]
+include::resources/code/00_simple_lib.out[lines=2]
+--
+
+[.notes]
+--
+With out library's value, however, things are not so simple.
+
+Again, ctypes is function-oriented, which means that referencing the value's name directly in the DLL will not yield the expected result.
+
+Instead of a value, we end-up with a function pointer - not quite what we expected.
 --
 
 === Read it!
 
-[source, py]
+[source, py, indent=0]
 --
-include::resources/code/01_simple_constant.py[tag=int_resolve]
---
-
-[quote%step]
---
-include::resources/code/01_simple_constant.out[lines=2]
---
-
-[source%step, py, options=wrap]
---
-include::resources/code/01_simple_constant.py[tag=cast_resolve]
+include::resources/code/00_simple_lib.py[tag=int_resolve]
 --
 
 [quote%step]
 --
-include::resources/code/01_simple_constant.out[lines=3]
+include::resources/code/00_simple_lib.out[lines=3]
+--
+
+[source%step, py, indent=0]
+--
+include::resources/code/00_simple_lib.py[tag=cast_resolve]
+--
+
+[quote%step]
+--
+include::resources/code/00_simple_lib.out[lines=4]
+--
+
+[.notes]
+--
+Instead of blindly referencing a value in the lib's entries, we need to tell ctypes what we want - in this case an int, which is a `c_int` in the ctypes module.
+
+Most native types are available in `ctypes` with the `c_` prefix.
+
+Note that another more complicated but sometimes usefull way to reference is to explicitly cast an arbitrary value (here, the function pointer) to another type (here an `int` pointer).
+
+The result in this case is a native Python int instead of a `c_int` instance du to the array value access, one of the free footguns that come with ctypes, though its use is fairly straightforward.
 --
