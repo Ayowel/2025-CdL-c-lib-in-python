@@ -6,7 +6,7 @@ all: presentation.html presentation-live.html
 presentation: presentation.html
 libs: $(subst .c,.so,$(IN_FILES))
 outs: $(subst .c,.out,$(IN_FILES))
-dumps: $(subst .c,.dump,$(wildcard *_simple_*.c))
+dumps: $(subst .c,.dump,$(IN_FILES))
 clean:
 	rm -f $(subst .c,.so,$(IN_FILES)) $(subst .c,.o,$(IN_FILES)) $(subst .c,.dump,$(IN_FILES)) $(subst .c,.out,$(IN_FILES))
 purge: clean
