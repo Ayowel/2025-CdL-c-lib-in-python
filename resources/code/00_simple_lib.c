@@ -5,6 +5,7 @@
 // tag::function[]
 void hello() {
     printf("Hello world!\n");
+    fflush(stdout);
 }
 // end::function[]
 
