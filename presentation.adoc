@@ -621,7 +621,7 @@ The counts are for the library in version 1.17.0.3.
 === Getting in line with steamapi.json
 
 [%step]
-* https://github.com/Ayowel/eos-sdk-json[Produce an intermediate JSON representation]
+* https://github.com/Ayowel/eos-sdk-json[Produce an intermediate JSON representation, window=_blank]
 
 [mermaid%step]
 ----
@@ -635,7 +635,7 @@ graph LR;
 ----
 
 [%step]
-* https://github.com/Ayowel/renpy-epicgames-eos/tree/3881e8b98af65cdf852beebc284e89bbd67dc3ca/epic_api_generator[Generate code from the intermediate JSON]
+* https://github.com/Ayowel/renpy-epicgames-eos/tree/3881e8b98af65cdf852beebc284e89bbd67dc3ca/epic_api_generator[Generate code from the intermediate JSON,window=_blank]
 
 [mermaid%step]
 ----
