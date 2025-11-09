@@ -1,6 +1,13 @@
-/vendor
-/.vscode/
 /presentation*.html
+
+# Venv directories
+/vendor
+/.venv
+
+# IDE configuration
+/.vscode/
+
+# CI
 /_site
 
 # To allow include override
