@@ -1,0 +1,23 @@
+services:
+  revealjs:
+    build: ./revealjs
+    user: "1500:1500"
+    ports:
+      - "8001:8000"
+  kroki:
+    image: docker.io/yuzutech/kroki
+    user: "1500:1500"
+    depends_on:
+      - mermaid
+    environment:
+      - KROKI_MERMAID_HOST=mermaid
+    ports:
+      - "8000:8000"
+    # If you do need to explicitly mount /tmp, make sure to include the exec option
+    tmpfs:
+      - /tmp:exec
+  mermaid:
+    image: docker.io/yuzutech/kroki-mermaid
+    user: "1500:1500"
+    expose:
+      - "8002"
