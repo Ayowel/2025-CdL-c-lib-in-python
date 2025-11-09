@@ -22,14 +22,20 @@ jobs:
       - name: Install ruby dependencies
         run: bundle install
 
+      - name: Install python dependencies
+        run: pip install -r requirements.txt
+
       - name: Build code assets
         run: make all
+        env:
+          STRICT_GENERATION: enabled
         working-directory: resources/code
 
       - name: Build presentation file
         run: |
-          mkdir _site
-          bundle exec asciidoctor-revealjs -o _site/index.html presentation.adoc
+          mkdir -p _site/resources
+          cp -r resources/styles/ _site/resources/
+          cp presentation.html _site/index.html
 
       - name: Install html single-file packager
         if: github.ref == 'refs/heads/master'

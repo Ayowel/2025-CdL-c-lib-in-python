@@ -1,3 +1,7 @@
 /vendor
 /.vscode/
 /presentation*.html
+/_site
+
+# To allow include override
+.clangd
