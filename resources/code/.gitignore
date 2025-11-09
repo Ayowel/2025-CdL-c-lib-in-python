@@ -1,4 +1,5 @@
-/*.o
-/*.so
-/*.dump
-/*.out
+*cffilib.c
+*.o
+*.so
+*.dump
+*.out

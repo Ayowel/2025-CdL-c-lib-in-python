@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "00_simple_lib.h"
+#include "main.h"
 
 // tag::function[]
 void hello() {

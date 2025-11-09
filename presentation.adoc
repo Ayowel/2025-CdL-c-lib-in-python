@@ -11,13 +11,13 @@ This is a RevealJS presentation:
 * Press `Escape` to get a global view
 endif::live-presentation[]
 
-== What can we get fom the lib's file ?
+== What can we get fom the lib's binary ?
 
 === Defines
 
 [source, c]
 --
-include::resources/code/00_simple_lib.h[tag=defines]
+include::resources/code/00_simple_lib/main.h[tag=defines]
 --
 
 [%step]
@@ -25,15 +25,15 @@ No
 
 [.notes]
 --
-Define macros are interpreted by the preprocessor before any.
-Do not use custom defines for PI, reuse the definition in math.h instead.
+Define macros are interpreted by the preprocessor before any actual compilation occurs, thus they are not even present in the intermediate representation that will be used to generation the lib.
+Also, do not use custom defines for PI. Reuse the definition in math.h instead.
 --
 
 === Typedefs
 
 [source, h]
 --
-include::resources/code/00_simple_lib.h[tag=typedef]
+include::resources/code/00_simple_lib/main.h[tag=typedef]
 --
 
 [%step]
@@ -41,14 +41,15 @@ No
 
 [.notes]
 --
-
+Types are indirectly present in all processing, however only their structural properties can be inferred by analysis from the generated lib (size), not their semantic ones (type name and source).
+Programatically, no type information can be retrieved from the raw lib information.
 --
 
 === Structures
 
 [source, h]
 --
-include::resources/code/00_simple_lib.h[tag=struct]
+include::resources/code/00_simple_lib/main.h[tag=struct]
 --
 
 [%step]
@@ -56,19 +57,23 @@ No
 
 [.notes]
 --
-
+Like types, only structural information (size, attributes locations and sizes) can be inferred via analysis from the generated lib, not their semantic ones (structure and attributes names).
+Programatically, no structure information can be retrieved from the raw lib information.
+The same applies for unions.
 --
 
 === Variables
 
+.Variable declaration in the header
 [source, h]
 --
-include::resources/code/00_simple_lib.h[tag=const]
+include::resources/code/00_simple_lib/main.h[tag=const]
 --
 
+.Variable definition in the lib's C code
 [source, c]
 --
-include::resources/code/00_simple_lib.c[tag=const]
+include::resources/code/00_simple_lib/main.c[tag=const]
 --
 
 [%step]
@@ -81,14 +86,16 @@ Yes
 
 === Functions
 
+.Function declaration in the header
 [source, h]
 --
-include::resources/code/00_simple_lib.h[tag=function]
+include::resources/code/00_simple_lib/main.h[tag=function]
 --
 
+.Function definition in the lib's C code
 [source, c]
 --
-include::resources/code/00_simple_lib.c[tag=function]
+include::resources/code/00_simple_lib/main.c[tag=function]
 --
 
 [%step]
@@ -96,18 +103,29 @@ Yes
 
 === A look in the DLL
 
-[source, bash]
+.On Linux
+[source%step, bash]
 --
-nm -gD my_lib.so
+nm -gD "my_lib.so"
+objdump -T "my_lib.so" 
+--
+
+.On windows
+[source%step, sh]
+--
+dumpbin /exports "my_lib.dll"
 --
 
 [quote%step]
+.Output of the nm command
 --
-include::resources/code/00_simple_lib.dump[]
+include::resources/code/00_simple_lib/main.dump[]
 --
 
 [.notes]
 --
+The Application Binary Interface of C code
+
 The `nm` tools allows us to take a peek at the symbols table in a library's file. This symbols table contains all the entries we can reference in the DLL.
 
 In the output, the first column is the symbol's value (e.g.: a pointer to the actual data or function's instructions' location), the second is it's type (e.g.: `T` stands for text, which is usually code/functions, while `R` stands for read-only data).
@@ -119,16 +137,26 @@ Here, the command shows the `normalized_radians_list_item` function that makes u
 == Use the lib
 
 [step=1]
-Use ctypes
+Use ctypes or cffi
 
-[.small, step=2]
+[.small, step=3]
 (That's it)
+
+[.notes]
+--
+Ctypes is python's native library to load and bind with C DLLs, while cffi needs to be loaded from pypi and may rely on external tools depending on how it's used.
+--
 
 === Load it
 
-[source, py, indent=0]
+[source.ctypes, py, indent=0]
 --
-include::resources/code/00_simple_lib.py[tag=load_dll]
+include::resources/code/00_simple_lib/main.py[tag=load_dll]
+--
+
+[source.cffi%step, py, indent=0]
+--
+include::resources/code/00_simple_lib/main.py[tag=cffi_build]
 --
 
 [.notes]
@@ -140,24 +168,29 @@ As long as you know the path of the .dll or .so file for your system, loading sa
 
 [source, c]
 --
-include::resources/code/00_simple_lib.c[tag=function]
+include::resources/code/00_simple_lib/main.c[tag=function]
 --
 
-[source%step, py, indent=0]
+[source.ctypes%step, py, indent=0]
 --
-include::resources/code/00_simple_lib.py[tag=funccall]
+include::resources/code/00_simple_lib/main.py[tag=ctypes_funccall]
+--
+
+[source.cffi%step, py, indent=0]
+--
+include::resources/code/00_simple_lib/main.py[tag=cffi_funccall]
 --
 
 [quote%step]
 --
-include::resources/code/00_simple_lib.out[lines=1]
+include::resources/code/00_simple_lib/main.out[tag=ctypes_funccall]
 --
 
 [.notes]
 --
 Getting back to our library's hello function, now that we know how to load a DLL, we can call it.
 
-Ctypes is functions oriented, which makes it very easy to call simple functions simply by referencing their in-DLL name.
+For functions, simply use the function names to easily call parameters-less functions.
 
 This will result in the expected message being written to the CLI.
 --
@@ -166,53 +199,58 @@ This will result in the expected message being written to the CLI.
 
 [source, c]
 --
-include::resources/code/00_simple_lib.c[tag=const]
+include::resources/code/00_simple_lib/main.c[tag=const]
 --
 
-[source%step, py, indent=0]
+[source.ctypes%step, py, indent=0]
 --
-include::resources/code/00_simple_lib.py[tag=dll_resolve]
+include::resources/code/00_simple_lib/main.py[tag=ctypes_dll_resolve]
 --
 
 [quote%step]
 --
-include::resources/code/00_simple_lib.out[lines=2]
+include::resources/code/00_simple_lib/main.out[tag=ctypes_dll_resolve]
 --
 
 [.notes]
 --
-With out library's value, however, things are not so simple.
+ctypes is function-oriented, which means that referencing a symbol on a dll will by default yield a function reference.
 
-Again, ctypes is function-oriented, which means that referencing the value's name directly in the DLL will not yield the expected result.
+Thus, if we try to print the value directly, we will not get the expected result:
 
 Instead of a value, we end-up with a function pointer - not quite what we expected.
 --
 
 === Read it!
 
-[source, py, indent=0]
+[source.ctypes, py, indent=0]
 --
-include::resources/code/00_simple_lib.py[tag=int_resolve]
---
-
-[quote%step]
---
-include::resources/code/00_simple_lib.out[lines=3]
---
-
-[source%step, py, indent=0]
---
-include::resources/code/00_simple_lib.py[tag=cast_resolve]
+include::resources/code/00_simple_lib/main.py[tag=ctypes_int_resolve]
 --
 
 [quote%step]
 --
-include::resources/code/00_simple_lib.out[lines=4]
+include::resources/code/00_simple_lib/main.out[tag=ctypes_int_resolve]
+--
+
+[source.ctypes%step, py, indent=0]
+--
+include::resources/code/00_simple_lib/main.py[tag=ctypes_cast_resolve]
+--
+
+[source.cffi%step, py, indent=0]
+--
+include::resources/code/00_simple_lib/main.py[tag=cffi_int, indent=0]
+--
+
+[quote%step]
+--
+include::resources/code/00_simple_lib/main.out[tag=ctypes_cast_resolve]
 --
 
 [.notes]
 --
-Instead of blindly referencing a value in the lib's entries, we need to tell ctypes what we want - in this case an int, which is a `c_int` in the ctypes module.
+Instead of blindly referencing a value in the lib's entries, we need to tell ctypes what we expect - in this case an int, which is a `c_int` in the ctypes module.
 
 Most native types are available in `ctypes` with the `c_` prefix.
 
@@ -220,3 +258,794 @@ Note that another more complicated but sometimes usefull way to reference is to 
 
 The result in this case is a native Python int instead of a `c_int` instance du to the array value access, one of the free footguns that come with ctypes, though its use is fairly straightforward.
 --
+
+== C definitions in python
+
+Who is ABI?
+
+[.notes]
+--
+The Application Binary Interface is 
+--
+
+=== Simple call with parameters - int
+
+[source, h]
+--
+include::resources/code/01_function_with_parameters/main.h[tag=ctypes_double_int]
+--
+
+[source, c]
+--
+include::resources/code/01_function_with_parameters/main.c[tag=ctypes_double_int]
+--
+
+[source.ctypes%step, py, indent=0]
+--
+include::resources/code/01_function_with_parameters/main.py[tag=ctypes_double_int]
+--
+
+[source.cffi%step, py, indent=0]
+--
+include::resources/code/01_function_with_parameters/main.py[tag=cffi_double_int, indent=0]
+--
+
+[quote%step]
+--
+include::resources/code/01_function_with_parameters/main.out[tag=ctypes_double_int]
+--
+
+[.notes]
+--
+Getting back to function calls, we can just as easily call a function that takes and returns integers.
+
+We just need to use the function's name as a reference, pass our parameter...
+
+And boom, a 6.
+--
+
+=== Simple call with parameters - float
+
+[source, h]
+--
+include::resources/code/01_function_with_parameters/main.h[tag=ctypes_double_float]
+--
+
+[source, c]
+--
+include::resources/code/01_function_with_parameters/main.c[tag=ctypes_double_float]
+--
+
+[source.ctypes%step, py, indent=0]
+--
+include::resources/code/01_function_with_parameters/main.py[tag=ctypes_double_float]
+--
+
+[quote.red%step]
+--
+[.small]
+include::resources/code/01_function_with_parameters/main.out[tag=ctypes_double_float]
+--
+
+[source.ctypes%step, py, indent=0]
+--
+include::resources/code/01_function_with_parameters/main.py[tag=ctypes_double_float_ctypes]
+--
+
+[quote%step]
+--
+include::resources/code/01_function_with_parameters/main.out[tag=ctypes_double_float_ctypes]
+--
+
+[%step]
+WTF?
+
+[.notes]
+--
+With a function that multiplies a floating value however, things are not so simple.
+
+Same call, let's just pass a Python float instead.
+
+Doing so will fail as, by default, ctypes only knows to map c_int values.
+
+Thus, we can help ctypes figure things out by explicitely providing a C float.
+
+Though the result is not quite what we expect, unless 1 is now twice 3.5.
+
+So, what's going on? Basically, if we directly use functions, ctypes does its best to map the parameters we provide and the return value to something useable, however it's not something that can be found from the DLL files and we should tell ctypes what it should use instead.
+--
+
+=== Specifying function types
+
+[source, h]
+--
+include::resources/code/01_function_with_parameters/main.h[tag=ctypes_double_float]
+--
+
+[source.ctypes%step, py]
+--
+include::resources/code/01_function_with_parameters/main.py[tag=ctypes_double_float_return_type, indent=0]
+include::resources/code/01_function_with_parameters/main.py[tag=ctypes_double_float_return_typed, indent=0]
+--
+
+[quote%step]
+--
+include::resources/code/01_function_with_parameters/main.out[tag=ctypes_double_float_return_typed]
+--
+
+[source.ctypes%step, py]
+--
+include::resources/code/01_function_with_parameters/main.py[tag=ctypes_double_float_arg_type, indent=0]
+include::resources/code/01_function_with_parameters/main.py[tag=ctypes_double_float_arg_typed, indent=0]
+--
+
+[source.cffi%step, py, indent=0]
+--
+include::resources/code/01_function_with_parameters/main.py[tag=cffi_double_float, indent=0]
+--
+
+[quote%step]
+--
+include::resources/code/01_function_with_parameters/main.out[tag=ctypes_double_float_arg_typed]
+--
+
+[.notes]
+--
+To properly specify the function, we need to define both the return type and the parameters' type.
+
+To specify the return type, set the function's `restype` to the desired type.
+
+Ctypes will then be able to properly read the resulting value and return it.
+
+Similarly, the function's `argtypes` attribute should be set to an array of types that match the function's definition.
+
+Once this is done, ctypes becomes better at implicitely mapping provided values from python types to c types.
+--
+
+== Types
+
+[source.ctypes, py]
+--
+from ctypes import (
+    Array, Structure, Union, CFUNCTYPE, POINTER,
+    c_int16, c_int32, c_int64, c_uint16, c_uint32, c_uint64,
+    c_char, c_char_p, c_void_p, c_float, c_double, c_size_t,
+)
+--
+
+[source.cffi%step, py]
+--
+from cffi import FFI
+ffi = FFI()
+--
+//data_pointer = ffi.open('MyType *')
+
+[.notes]
+--
+ctypes provides numerous base classes for C types that can be instanciated 
+--
+
+=== Array types
+
+[source.ctypes, py]
+--
+# Fixed-size array
+ctypes.c_int * 3
+ctypes.c_int * 3 * 2
+--
+
+> <class '__main__.c_int_Array_3'>
+> <class '__main__.c_int_Array_3_Array_2'>
+
+[source.ctypes, py]
+--
+# Array instanciation
+(ctypes.c_int * 3)()
+--
+
+> <__main__.c_int_Array_3 object at 0x7f309b70bdd0>
+
+=== Pointer types
+
+[source.ctypes, py]
+--
+# Heavy pointer
+ctypes.POINTER(ctypes.c_int)
+--
+
+> <class '__main__.LP_c_int'>
+
+[source.ctypes, py]
+--
+# Light pointer
+ctypes.byref(ctypes.c_int)
+--
+
+> <cparam 'P' (0x7fb3d7a82da0)>
+
+=== Typedefs
+
+[source, h]
+--
+typedef void* MyHandle;
+typedef struct InternalStruct* InternalStructP;
+--
+
+[source.ctypes, py]
+--
+MyHandle = ctypes.c_void_p
+class InternalStructP(ctypes.c_void_p):
+  pass
+--
+
+=== Structs
+
+[source, h]
+--
+include::resources/code/00_simple_lib/main.h[tag=struct]
+--
+
+[source.ctypes, py]
+--
+class linked_list(ctypes.Structure):
+    _pack_ = PACK
+
+linked_list._fields_ = [
+        ('value', ctypes.c_int),
+        ('next', ctypes.POINTER(linked_list)),
+    ]
+
+l = linked_list(next=ctypes.pointer(linked_list(value=3)))
+--
+
+=== Packing
+
+[source, h]
+--
+include::resources/code/02_structure_blob/main.h[tag=pragma]
+include::resources/code/02_structure_blob/main.h[tag=datablob_struct]
+
+include::resources/code/02_structure_blob/main.h[tag=datablob_function_declaration]
+--
+
+[source%step, c]
+--
+include::resources/code/02_structure_blob/main.c[tag=datablob_get_function]
+--
+
+[source.ctypes%step, py]
+--
+include::resources/code/02_structure_blob/main.py[tag=ctypes_datablob_class, indent=0]
+--
+
+[.notes]
+--
+One additional thing to be aware of is the structure packing used by the target library. As an example, let's consider this DataBlob structure with a packing of 1 and a function that returns its `d` attribute.
+
+The function's implementation looks like this. Not much to say here.
+
+The corresponding ctypes structure will then look like this. Note the `_pack_` attribute that should be set to 1 to match the lib's packing.
+--
+
+=== Packing
+
+[source, py]
+--
+include::resources/code/02_structure_blob/main.py[tag=ctypes_function, indent=0]
+--
+
+[source.ctypes, py]
+--
+include::resources/code/02_structure_blob/main.py[tag=ctypes_datablob_instance, indent=0]
+include::resources/code/02_structure_blob/main.py[tag=ctypes_datablob_call, indent=0]
+--
+
+[quote%hardbreaks%step]
+include::resources/code/02_structure_blob/main.out[tag=ctypes_datablob]
+
+[.notes]
+--
+We can then declare our ctypes interface for the function and call it with a custom object. Here, we expect the output to be `d` as it is the ASCII code stored in the variable.
+
+Yet, if we do not match the packing expected for the structure, we will NOT get the expected value.
+--
+
+=== Packing table
+
+.PACK=1, 2, 4, 8
+[%header.zoom-80, cols='10*^']
+|===
+| byte | byte | byte | byte | byte | byte | byte | byte | byte | byte
+| `a` | `b1` | `b2` | `b3` | `b4` | `c` | `d` 3+| **Unused**
+| `a` | *_* | `b1` | `b2` | `b3` | `b4` | `c` | `d` 2+| *Unused*
+| `a` | *_* | *_* | *_* | `b1` | `b2` | `b3` | `b4` | `c` | `d`
+| `a` | *_* | *_* | *_* | `b1` | `b2` | `b3` | `b4` | `c` | `d`
+|===
+
+[.notes]
+--
+This difference is due to the fact that packing affects the internal data layout for the structure (as well as its size): if an attribute is bigger that the number of available bytes for the current bytes pack, it will be stored starting from the next empty bytes pack available.
+--
+
+== Caution, fresh memory
+
+[.notes]
+--
+Now that we've gone over our application's
+Things to be aware of when writing code that interacts 
+--
+
+=== Memory management
+
+* Differentiate data you initialize from the lib's data
+* Use the lib's alloc/free functions if there is any
+* Free the memory you allocate
+* Make sure to keep tracking memory that might still be in use
+
+=== Garbage prevention
+
+// TODO, use 03
+
+== What about Epic ?
+
+[%step]
+* 64 typedefs
+* 71 enums
+* 190 callbacks
+* 626 functions
+* 687 defines
+* 705 structures
+
+[.big%step]
+Not doing that.
+
+[.small%step]
+Not manually.
+
+[.notes]
+--
+The counts are for the library in version 1.17.0.3.
+--
+
+=== The target
+
+[%step]
+* Be easy to maintain
+* Make it easy to check changes introduced by updates
+* Be reusable for other integrations of the library
+* Be reusable for other library integrations
+
+[%step]
+*Regexes...*
+
+=== Getting in line with steamapi.json
+
+[%step]
+* https://github.com/Ayowel/eos-sdk-json[Produce an intermediate JSON representation]
+
+[mermaid%step]
+----
+graph LR;
+  source(Load source code);
+  sort(Sort files);
+  parse(Parse);
+  ir(Intermediate JSON\nrepresentation);
+
+  source --> sort --> parse --> ir;
+----
+
+[%step]
+* https://github.com/Ayowel/renpy-epicgames-eos/tree/3881e8b98af65cdf852beebc284e89bbd67dc3ca/epic_api_generator[Generate code from the intermediate JSON]
+
+[mermaid%step]
+----
+graph LR;
+  ir2(Intermediate JSON\nrepresentation);
+  resolve(Sort resources);
+  generate(Generate bindings code);
+
+  ir2 --> resolve --> generate;
+----
+
+[.notes]
+--
+Steam's API provides a JSON file that can be used for code generation by projects that wish to integrate it,
+
+The aim is to reproducibly create a similar file for the Epic Online Services SDK that will then be used to programmatically generate the desired definitions in Python.
+--
+
+=== A typical parameter type
+
+[source, c]
+....
+/** The most recent version of the EOS_Achievements_QueryPlayerAchievements struct. */
+#define EOS_ACHIEVEMENTS_QUERYPLAYERACHIEVEMENTS_API_LATEST 2
+
+/**
+ * Input parameters for the EOS_Achievements_QueryPlayerAchievements function.
+ */
+EOS_STRUCT(EOS_Achievements_QueryPlayerAchievementsOptions, (
+	/** API Version: Set this to EOS_ACHIEVEMENTS_QUERYPLAYERACHIEVEMENTS_API_LATEST. */
+	int32_t ApiVersion;
+	/** The Product User ID for the user whose achievements are to be retrieved. */
+	EOS_ProductUserId TargetUserId;
+	/** The Product User ID for the user who is querying for player achievements. For a Dedicated Server this should be null. */
+	EOS_ProductUserId LocalUserId;
+));
+....
+
+[.notes]
+--
+This is an example of a parameter struct used by the Epic Games SDK functions.
+Pretty much all functions use a similar struct, with the same ApiVersion entry which's expected value is provided through a `#define` macro.
+
+As said previously, generic solutions tend to forego defines as they require preprocessing, which will make them disappear and - as you can see here - defines in the Epic Games SDK are load-bearing as they specify the API version being used. Thus, any solution can't just be chaining a processor and tokenizing its output.
+
+Additionally, we want to keep comment information as they indicate which values we need to use - which also means that they will need to be parsed at some points.
+--
+
+== Getting to the intermediate representation
+
+=== The lib's headers
+
+[plantuml, format=svg]
+----
+skinparam backgroundColor transparent
+skinparam legendBackgroundColor lightgray
+legend
+SDK/Include
+|_ Linux
+   |_ eos_Linux_base.h
+   |_ eos_Linux.h
+|_ Mac
+   |_ eos_Mac_base.h
+   |_ eos_Mac.h
+|_ Windows
+   |_ eos_Windows_base.h
+   |_ eos_Windows.h
+|_ eos_achievements.h
+|_ eos_achievements_types_deprecated.inl
+|_ eos_achievements_types.h
+|_ eos_anticheatclient.h
+|_ eos_anticheatclient_types_deprecated.inl
+|_ eos_anticheatclient_types.h
+|_ eos_anticheatcommon_types.h
+|_ eos_anticheatserver.h
+|_ eos_anticheatserver_types.h
+|_ eos_auth.h
+|_ eos_auth_types_deprecated.inl
+|_ eos_auth_types.h
+|_ eos_base.h
+|_ eos_common.h
+|_ eos_connect.h
+|_ eos_connect_types.h
+|_ eos_custominvites.h
+|_ eos_custominvites_types.h
+|_ eos_ecom.h
+|_ eos_ecom_types.h
+|_ eos_friends.h
+|_ eos_friends_types.h
+|_ eos_init.h
+|_ eos_integratedplatform.h
+|_ eos_integratedplatform_types.h
+|_ eos_kws.h
+|_ eos_kws_types.h
+|_ eos_leaderboards.h
+|_ eos_leaderboards_types_deprecated.inl
+|_ eos_leaderboards_types.h
+|_ eos_lobby.h
+|_ eos_lobby_types.h
+|_ eos_logging_categories.h
+|_ eos_logging.h
+|_ eos_metrics.h
+|_ eos_metrics_types.h
+|_ eos_mods.h
+|_ eos_mods_types.h
+|_ eos_p2p.h
+|_ eos_p2p_types.h
+|_ eos_platform_prereqs.h
+|_ eos_playerdatastorage.h
+|_ eos_playerdatastorage_types.h
+|_ eos_presence.h
+|_ eos_presence_localized_types.h
+|_ eos_presence_types.h
+|_ eos_progressionsnapshot.h
+|_ eos_progressionsnapshot_types.h
+|_ eos_reports.h
+|_ eos_reports_types.h
+|_ eos_result.h
+|_ eos_rtc_admin.h
+|_ eos_rtc_admin_types.h
+|_ eos_rtc_audio.h
+|_ eos_rtc_audio_types_deprecated.inl
+|_ eos_rtc_audio_types.h
+|_ eos_rtc_data.h
+|_ eos_rtc_data_types.h
+|_ eos_rtc.h
+|_ eos_rtc_types.h
+|_ eos_sanctions.h
+|_ eos_sanctions_types.h
+|_ eos_sdk.h
+|_ eos_sessions.h
+|_ eos_sessions_types.h
+|_ eos_stats.h
+|_ eos_stats_types.h
+|_ eos_titlestorage.h
+|_ eos_titlestorage_types.h
+|_ eos_types.h
+|_ eos_ui_buttons.h
+|_ eos_ui.h
+|_ eos_ui_keys.h
+|_ eos_ui_types.h
+|_ eos_userinfo.h
+|_ eos_userinfo_types.h
+|_ eos_version.h
+end legend
+----
+
+[.notes]
+--
+The lib's includes contain some platform-specific headers, however they only contain some platform-specifc structs that can safely be defined even on platforms that do not use them.
+
+Another noteworthy file is `eos_base.h`, which contains all structural preprocessor macros for declarations in other files (e.g.: the EOS_STRUCT macro shown previously).
+
+Finally, some of the `*_deprecated.inl` files actually have to be loaded as they are still referenced in functions headers.
+--
+
+=== Load the lib includes
+
+[source, py]
+----
+# Load all header files
+files_index = build_header_file_index(dir_path)
+# Pick a read order for the header files
+files_order = build_file_read_order(files_index)
+----
+
+[source, py]
+----
+# Overwride eos_base as it mostly provides hard-to-parse definitions.
+assert 'eos_base.h' in files_order
+files_index['eos_base.h'] = [
+    'typedef int32_t EOS_Bool;',
+    '#define EOS_TRUE ((EOS_Bool)1)',
+    '#define EOS_FALSE ((EOS_Bool)0)',
+]
+----
+
+=== Parse lib entries
+
+[source, h]
+----
+/** Successful result. no further error processing needed */
+EOS_RESULT_VALUE(EOS_Success, 0)
+----
+
+[source%step, py]
+----
+def parse_result_value(content, i, line, comment = '', file = ''):
+    """Extract an EOS_RESULT enum value from a list of lines"""
+    _ = (content, file)
+    valinfo = re.match('^EOS_RESULT_VALUE(_LAST)?\\((?P<name>[a-zA-Z0-9_]+), (?P<value>[x0-9A-F]+)\\)$', line)
+    assert valinfo
+    name = valinfo['name'].strip()
+    value = valinfo['value'].strip()
+    return (i, OrderedDict(
+        comment = comment,
+        name = name,
+        value = value
+    ))
+----
+
+=== Entries parse index
+
+[source, py]
+----
+flags = [
+    ('EOS_DECLARE_FUNC', parse_function, partial(assert_insert, functions, 'methodname_flat')),
+    ('EOS_DECLARE_CALLBACK', parse_callback, partial(assert_insert, callbacks, 'callbackname')),
+    ('EOS_STRUCT', parse_struct, partial(assert_insert, structs, 'struct')),
+    ('EOS_RESULT_VALUE', parse_result_value, partial(assert_insert, SCOPED_ENUMS['EOS_EResult'], 'name')),
+    ('PROCESS_CATEGORY', parse_log_enum_value, partial(assert_insert, SCOPED_ENUMS['EOS_ELogCategory'], 'name')),
+    ('EOS_ENUM_START', parse_enum_start_end, partial(assert_insert, enums, 'enumname')),
+    ('EOS_ENUM_END', parse_enum_start_end, noop),
+    ('EOS_ENUM_BOOLEAN_OPERATORS', parse_skip_line, noop),
+    ('EOS_ENUM', parse_enum, partial(assert_insert, enums, 'enumname')),
+    ('#define', parse_define, partial(assert_insert_if, defines, DEFINES_IGNORE_LIST, 'name')),
+    (('typedef', 'EOS_EXTERN_C'), parse_typedef, partial(assert_insert, typedefs, 'name')),
+    (DIRECTIVES_IGNORE_LIST, absorb_directive, noop)
+]
+----
+
+=== Entries parsing loop
+
+[plantuml%autofit, format=svg]
+----
+@startuml
+skinparam BackgroundColor transparent
+skinParam ActivityStartColor lightblue
+skinParam ActivityStopColor lightblue
+skinParam ArrowColor lightblue
+skinParam ArrowFontColor lightblue
+skinParam DefaultTextAlignment center
+
+skinparam linetype ortho
+
+skinParam conditionStyle inside
+
+start
+repeat :read file;
+    repeat :read line;
+        :Read any comment;
+        while (Has unchecked flag?)
+            if (Match line start?) then (true)
+                :Parse line &
+                Save line content repr;
+                break
+            endif
+        endwhile
+        if (Matched no flag?) then (true)
+            :Check special cases;
+        endif
+    repeat while (Has unread line?) is (true)
+repeat while (Has unread file?) is (true)
+stop
+@enduml
+----
+
+// [plantuml, format=svg]
+// ----
+// @startuml
+// skinparam backgroundColor transparent
+// skinParam ActivityStartColor blue
+// skinParam ActivityEndColor blue
+// skinParam arrowColor lightblue
+// skinParam arrowFontColor lightblue
+// skinParam activityDiamondBackgroundColor lawngreen
+
+// (*) -right-> "Read file"
+// -right-> "Read line"
+// -right-> if Line is comment then
+//   -right->[true] "Read comment lines"
+//   -right-> move to next line
+//   -down-> "Get unchecked flag from flags list"
+// else
+//   -down->[false] "Get unchecked flag from flags list"
+// endif
+// if Match line start then
+//   -down->[true] "Parse line"
+//   -down-> Save line content repr
+//   --> ===B1===
+// else
+//   -left->[fail] if "has unchecked flag" then
+//     -up->[loop] "Get unchecked flag from flags list" 
+//   else
+//     -right->[exhausted flags] "Check special cases"
+//     --> ===B1===
+//   endif
+// endif
+// ===B1=== -down-> if has unread line then
+//   -up->[true] Read line
+// else
+// endif
+// -->[false] if has unread file then
+//   -up->[true] Read file
+// else
+// endif
+// -right->[false] Generate spec content
+// -right-> Dump as JSON
+// -right-> (*)
+// @enduml
+// ----
+
+[.notes]
+--
+Special cases include EOS_UI_ preprocessor macros as they need additional context, and single-line comments which are ignored.
+--
+
+== Getting to the code generation
+
+=== Load all entries
+
+[source, py]
+----
+class Entry():
+    """A spec entry"""
+    def provides(self): # type: () -> List[str]
+        """Get the list of variables/types provided by this entry."""
+        return tuple()
+    def requires(self):
+        """Get the list of variables/types needed by this entry."""
+        return tuple()
+    def write(self, out, mapper):
+        """Write out an entry to the provided file handle."""
+        raise NotImplementedError()
+    def provides_defaults(self, mapper):
+        # type: (Mapper) -> Dict[str, str]
+        """Returns a dict of default values for the entry"""
+        _ = mapper
+        return {}
+----
+
+=== Resolve all entries' interdependenvies
+
+[source, py]
+----
+def requires(self):
+    if self.resolved_requires is None:
+        requires = []
+        if re.match(r'^("[^"]+"|-?[0-9]+|0x[0-9a-fA-F]+|0o[0-7]+)$', self.expression) is None:
+            req_list = re.findall(r'[A-Z][a-zA-Z0-9_]+', self.expression)
+            for r in req_list:
+                if r != 'NULL':
+                    requires.append(r)
+        self.resolved_requires = requires
+    return self.resolved_requires
+----
+
+=== Associate structs and functions
+
+[source, py]
+----
+# Associate each function to its corresponding class
+for funcname, function in functions_index.items():
+    base_split_name = funcname.split('_')
+    for i in range(2, len(base_split_name))[::-1]:
+        found = False
+        # Match from the function's name or from its "handle" version
+        for split_name in (base_split_name[:i], (base_split_name[0], f'H{base_split_name[1]}', *base_split_name[2:i])):
+            contextname = '_'.join(split_name)
+            if contextname in enum_types_structs_index:
+                obj = enum_types_structs_index[contextname]
+                local_name = '_'.join(base_split_name[i:])
+                is_static = contextname in function.returntype
+                obj.add_function(function, local_name, is_static)
+                found = True
+                break
+        if found:
+            break
+    else:
+        logger.info('No context object found for function %s.', funcname)
+----
+
+=== Write entries in order
+
+[source, py]
+----
+out.write(FILE_START)
+out.write('\n')
+# Add 'blank' function entries
+for e in self.file_entries:
+    if isinstance(e, FunctionEntry):
+        out.write(f'{e.name} = not_ready\n')
+# Write out every entry
+for e in self.file_entries:
+    if not isinstance(e, FunctionEntry):
+        e.write(out, self.mapper)
+# Load fuction pointers from dll
+out.write('def load(dll):\n')
+for e in self.file_entries:
+    if isinstance(e, FunctionEntry):
+        e.write(out, self.mapper)
+----
+
+[.notes]
+--
+15734 lines
+--
+
+== With cffi
+
+// https://runebook.dev/en/articles/python/library/ctypes/ctypes._CData._objects
+
+=== Dependencies
+
+* python headers
+* ffi headers
+
+[.notes]
+--
+On Fedora: , libffi-devel, libssl-devel
+On Ubuntu: python3?-dev, libssl-dev, libffi-dev
+--
+

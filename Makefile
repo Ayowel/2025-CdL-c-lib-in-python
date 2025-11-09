@@ -1,33 +1,21 @@
 
-IN_FILES=$(wildcard resources/code/*.c)
-DUMPTOOL=nm -gD
+CODEDIR=resources/code
+ASC_OPTS=${ASCIIDOC_OPTS}
 
-all: presentation.html presentation-live.html
+all: presentation presentation-live.html
 presentation: presentation.html
-libs: $(subst .c,.so,$(IN_FILES))
-outs: $(subst .c,.out,$(IN_FILES))
-dumps: $(subst .c,.dump,$(IN_FILES))
+
+code:
+	make -C $(CODEDIR) all
 clean:
-	rm -f $(subst .c,.so,$(IN_FILES)) $(subst .c,.o,$(IN_FILES)) $(subst .c,.dump,$(IN_FILES)) $(subst .c,.out,$(IN_FILES))
+	make -C $(CODEDIR) clean
 purge: clean
 	rm -f presentation.html presentation-live.html
 
-.PHONY: all libs outs dumps clean purge presentation
+.PHONY: all code clean purge presentation
 
-presentation.html: presentation.adoc outs dumps
-	bundle exec asciidoctor-revealjs presentation.adoc
+presentation.html: presentation.adoc code
+	bundle exec asciidoctor-revealjs -r asciidoctor-kroki ${ASC_OPTS} presentation.adoc
 
-presentation-live.html: presentation.adoc outs dumps
-	bundle exec asciidoctor-revealjs presentation.adoc -a live-presentation -o presentation-live.html
-
-%.dump: %.so
-	$(DUMPTOOL) $< >$@
-
-%.so: %.o
-	$(CC) $< -shared -o $@
-
-%.o: %.c
-	$(CC) -c -Wall -Werror -fpic $< -o $@
-
-%.out: %.py %.so
-	./$< > $@
+presentation-live.html: presentation.adoc code
+	bundle exec asciidoctor-revealjs -r asciidoctor-kroki ${ASC_OPTS} presentation.adoc -a live-presentation -o presentation-live.html
