@@ -2,6 +2,8 @@ GEM
   remote: https://rubygems.org/
   specs:
     asciidoctor (2.0.23)
+    asciidoctor-kroki (0.10.0)
+      asciidoctor (~> 2.0)
     asciidoctor-revealjs (5.2.0)
       asciidoctor (>= 2.0.0, < 3.0.0)
     logger (1.7.0)
@@ -12,6 +14,7 @@ PLATFORMS
 
 DEPENDENCIES
   asciidoctor
+  asciidoctor-kroki
   asciidoctor-revealjs
   logger
 
