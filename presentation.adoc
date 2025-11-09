@@ -684,10 +684,6 @@ The counts are for the library in version 1.17.0.3.
 * Be easy to maintain
 * Make it easy to check changes introduced by updates
 * Be reusable for other integrations of the library
-* Be reusable for other library integrations
-
-[%step]
-*Regexes...*
 
 === Getting in line with steamapi.json
 
