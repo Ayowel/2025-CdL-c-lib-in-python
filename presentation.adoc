@@ -857,9 +857,9 @@ flags = [
 ]
 ----
 
-=== Entries parsing loop
+=== Parsing loop
 
-[plantuml%autofit, format=svg]
+[plantuml%autofit.zoom-80, format=svg]
 ----
 @startuml
 skinparam BackgroundColor transparent
