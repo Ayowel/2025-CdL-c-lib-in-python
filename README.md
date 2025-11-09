@@ -15,6 +15,7 @@ To build the presentation, make sure that you have the following applications in
 Once all binaries are installed:
 
 * Install Gem dependencies with `bundle install`
+* Install Python dependencies with `pip install -r requirements.txt`
 * Build the presentation with `make presentation`
 
 ## Go offline
