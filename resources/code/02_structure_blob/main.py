@@ -23,7 +23,7 @@ def test_cffi_datablob(PACK=1):
     # tag::cffi_datablob_instance[]
     d = ffi.new('DataBlob *')
     d.a = b'a'
-    d.b = int.from_bytes(b'fghi')
+    d.b = int.from_bytes(b'fghi', byteorder='big')
     d.c = b'c'
     d.d = b'd'
     # end::cffi_datablob_instance[]
@@ -53,7 +53,7 @@ def test_ctypes_datablob(PACK=1):
     # end::ctypes_function[]
 
     # tag::ctypes_datablob_instance[]
-    d = DataBlob(b'a', int.from_bytes(b'fghi'), b'c', b'd')
+    d = DataBlob(b'a', int.from_bytes(b'fghi', byteorder='big'), b'c', b'd')
     # end::ctypes_datablob_instance[]
     return (
         # tag::ctypes_datablob_call[]

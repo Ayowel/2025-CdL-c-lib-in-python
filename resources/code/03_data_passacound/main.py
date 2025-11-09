@@ -47,7 +47,7 @@ print("end::api_tick_cb[]")
 
 print("tag::api_tick_data[]")
 # tag::api_tick_data[]
-data = DataBlob(b'a', int.from_bytes(b'fghi'), b'c', b'd')
+data = DataBlob(b'a', int.from_bytes(b'fghi', byteorder='big'), b'c', b'd')
 dll.api_setup_callback(api_python_callback, ctypes.cast(ctypes.byref(data), ctypes.c_void_p))
 dll.api_tick()
 # end::api_tick_data[]
@@ -56,7 +56,7 @@ print("end::api_tick_data[]")
 print("tag::call_callback_function[]")
 # tag::call_callback_function[]
 def call_callback():
-    d = DataBlob(b'a', int.from_bytes(b'fghi'), b'c', b'd')
+    d = DataBlob(b'a', int.from_bytes(b'fghi', byteorder='big'), b'c', b'd')
     dll.api_setup_callback(api_python_callback, ctypes.cast(ctypes.byref(d), ctypes.c_void_p))
 # end::call_callback_function[]
 print("end::call_callback_function[]")
