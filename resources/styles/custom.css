@@ -1,0 +1,31 @@
+.red {
+    color: red;
+}
+
+.zoom-80 {
+    zoom: 80%;
+}
+
+.ctypes code {
+    border-left: 3px solid pink;
+}
+
+.cffi code {
+    border-left: 3px solid aqua;
+}
+
+code::before {
+    float: right;
+    color: #666;
+    font-size: 0.6em;
+}
+
+code.language-py::before {
+    content: "python";
+}
+code.language-c::before {
+    content: "c";
+}
+code.language-h::before {
+    content: "h";
+}
