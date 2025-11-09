@@ -575,16 +575,87 @@ Now that we've gone over our application's
 Things to be aware of when writing code that interacts 
 --
 
+=== Code example
+
+[source, h]
+--
+include::resources/code/03_data_passaround/main.h[tag="api_tick"]
+include::resources/code/03_data_passaround/main.h[tag="api_callback"]
+include::resources/code/03_data_passaround/main.h[tag="api_setup_callback"]
+--
+
+[source%step, python]
+--
+include::resources/code/03_data_passaround/main.py[tag="api_callback_function"]
+--
+
+[source%step, python]
+--
+include::resources/code/03_data_passaround/main.py[tag="api_tick_cb"]
+--
+
+[quote%step]
+--
+include::resources/code/03_data_passaround/main.out[tag="api_tick_cb"]
+--
+
+=== !
+
+[source, python]
+--
+include::resources/code/03_data_passaround/main.py[tag="api_tick_data"]
+--
+
+[quote%step]
+--
+include::resources/code/03_data_passaround/main.out[tag="api_tick_data"]
+--
+
+[source%step, python]
+--
+include::resources/code/03_data_passaround/main.py[tag="call_callback_function"]
+--
+
+[source%step, python]
+--
+include::resources/code/03_data_passaround/main.py[tag="call_callback"]
+--
+
+[quote%step]
+--
+include::resources/code/03_data_passaround/main.out[tag="call_callback"]
+--
+
+=== What happened?
+
+[plantuml%autofit, format=svg]
+----
+@startuml
+participant Process #99FF99
+Process -> call_callback: Call
+participant data #cc5555
+call_callback -> data: Instanciate
+activate data #FFBBBB
+call_callback -> api_setup_callback: Call
+api_setup_callback -> api_setup_callback: Save data reference
+api_setup_callback -> call_callback: Return
+call_callback -> data: Free python variable
+call_callback -> Process: Return
+Process -> api_tick: Call
+api_tick -> callback: Call with data reference
+destroy data
+callback -> callback: Check & Print
+callback -> api_tick: Return
+api_tick -> Process: Return
+@enduml
+----
+
 === Memory management
 
 * Differentiate data you initialize from the lib's data
 * Use the lib's alloc/free functions if there is any
 * Free the memory you allocate
 * Make sure to keep tracking memory that might still be in use
-
-=== Garbage prevention
-
-// TODO, use 03
 
 == What about Epic ?
 
