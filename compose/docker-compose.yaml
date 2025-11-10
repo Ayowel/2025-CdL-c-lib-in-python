@@ -19,5 +19,8 @@ services:
   mermaid:
     image: docker.io/yuzutech/kroki-mermaid
     user: "1500:1500"
+    environment:
+    - XDG_CONFIG_HOME=/tmp/config
+    - XDG_CACHE_HOME=/tmp/cache
     expose:
       - "8002"
