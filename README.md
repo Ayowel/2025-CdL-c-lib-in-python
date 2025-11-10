@@ -25,5 +25,5 @@ To use the presentation offline, run kroki and revealjs servers locally and have
 ```sh
 cd compose
 podman compose up -d
-ASCIIDOC_OPTS='-a kroki-server-url=http://127.0.0.1:8000 -a revealjsdir=http://127.0.0.1:8001' make presentation
+ASCIIDOC_OPTS='-a kroki-server-url=http://127.0.0.1:8000 -a revealjsdir=http://127.0.0.1:8001 -a highlightjsdir=http://127.0.0.1:8001' make presentation
 ```
