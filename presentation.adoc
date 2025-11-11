@@ -631,22 +631,8 @@ include::resources/code/03_data_passaround/main.out[tag="call_callback"]
 [plantuml%autofit, format=svg]
 ----
 @startuml
-participant Process #99FF99
-Process -> call_callback: Call
-participant data #cc5555
-call_callback -> data: Instanciate
-activate data #FFBBBB
-call_callback -> api_setup_callback: Call
-api_setup_callback -> api_setup_callback: Save data reference
-api_setup_callback -> call_callback: Return
-call_callback -> data: Free python variable
-call_callback -> Process: Return
-Process -> api_tick: Call
-api_tick -> callback: Call with data reference
-destroy data
-callback -> callback: Check & Print
-callback -> api_tick: Return
-api_tick -> Process: Return
+include::resources/uml/plantuml_skinparam.puml[]
+include::resources/uml/memalloc_issue.puml[]
 @enduml
 ----
 
@@ -692,13 +678,7 @@ The counts are for the library in version 1.17.0.3.
 
 [mermaid%step]
 ----
-graph LR;
-  source(Load source code);
-  sort(Sort files);
-  parse(Parse);
-  ir(Intermediate JSON\nrepresentation);
-
-  source --> sort --> parse --> ir;
+include::resources/mermaid/map_header_to_json.mermaid[]
 ----
 
 [%step]
@@ -706,12 +686,7 @@ graph LR;
 
 [mermaid%step]
 ----
-graph LR;
-  ir2(Intermediate JSON\nrepresentation);
-  resolve(Sort resources);
-  generate(Generate bindings code);
-
-  ir2 --> resolve --> generate;
+include::resources/mermaid/map_json_to_python.mermaid[]
 ----
 
 [.notes]
@@ -757,97 +732,10 @@ Additionally, we want to keep comment information as they indicate which values 
 
 [plantuml, format=svg]
 ----
-skinparam backgroundColor transparent
-skinparam legendBackgroundColor lightgray
-legend
-SDK/Include
-|_ Linux
-   |_ eos_Linux_base.h
-   |_ eos_Linux.h
-|_ Mac
-   |_ eos_Mac_base.h
-   |_ eos_Mac.h
-|_ Windows
-   |_ eos_Windows_base.h
-   |_ eos_Windows.h
-|_ eos_achievements.h
-|_ eos_achievements_types_deprecated.inl
-|_ eos_achievements_types.h
-|_ eos_anticheatclient.h
-|_ eos_anticheatclient_types_deprecated.inl
-|_ eos_anticheatclient_types.h
-|_ eos_anticheatcommon_types.h
-|_ eos_anticheatserver.h
-|_ eos_anticheatserver_types.h
-|_ eos_auth.h
-|_ eos_auth_types_deprecated.inl
-|_ eos_auth_types.h
-|_ eos_base.h
-|_ eos_common.h
-|_ eos_connect.h
-|_ eos_connect_types.h
-|_ eos_custominvites.h
-|_ eos_custominvites_types.h
-|_ eos_ecom.h
-|_ eos_ecom_types.h
-|_ eos_friends.h
-|_ eos_friends_types.h
-|_ eos_init.h
-|_ eos_integratedplatform.h
-|_ eos_integratedplatform_types.h
-|_ eos_kws.h
-|_ eos_kws_types.h
-|_ eos_leaderboards.h
-|_ eos_leaderboards_types_deprecated.inl
-|_ eos_leaderboards_types.h
-|_ eos_lobby.h
-|_ eos_lobby_types.h
-|_ eos_logging_categories.h
-|_ eos_logging.h
-|_ eos_metrics.h
-|_ eos_metrics_types.h
-|_ eos_mods.h
-|_ eos_mods_types.h
-|_ eos_p2p.h
-|_ eos_p2p_types.h
-|_ eos_platform_prereqs.h
-|_ eos_playerdatastorage.h
-|_ eos_playerdatastorage_types.h
-|_ eos_presence.h
-|_ eos_presence_localized_types.h
-|_ eos_presence_types.h
-|_ eos_progressionsnapshot.h
-|_ eos_progressionsnapshot_types.h
-|_ eos_reports.h
-|_ eos_reports_types.h
-|_ eos_result.h
-|_ eos_rtc_admin.h
-|_ eos_rtc_admin_types.h
-|_ eos_rtc_audio.h
-|_ eos_rtc_audio_types_deprecated.inl
-|_ eos_rtc_audio_types.h
-|_ eos_rtc_data.h
-|_ eos_rtc_data_types.h
-|_ eos_rtc.h
-|_ eos_rtc_types.h
-|_ eos_sanctions.h
-|_ eos_sanctions_types.h
-|_ eos_sdk.h
-|_ eos_sessions.h
-|_ eos_sessions_types.h
-|_ eos_stats.h
-|_ eos_stats_types.h
-|_ eos_titlestorage.h
-|_ eos_titlestorage_types.h
-|_ eos_types.h
-|_ eos_ui_buttons.h
-|_ eos_ui.h
-|_ eos_ui_keys.h
-|_ eos_ui_types.h
-|_ eos_userinfo.h
-|_ eos_userinfo_types.h
-|_ eos_version.h
-end legend
+@startuml
+include::resources/uml/plantuml_skinparam.puml[]
+include::resources/uml/eos_include_headers.puml[]
+@enduml
 ----
 
 [.notes]
@@ -929,81 +817,10 @@ flags = [
 [plantuml%autofit.zoom-80, format=svg]
 ----
 @startuml
-skinparam BackgroundColor transparent
-skinParam ActivityStartColor lightblue
-skinParam ActivityStopColor lightblue
-skinParam ArrowColor lightblue
-skinParam ArrowFontColor lightblue
-skinParam DefaultTextAlignment center
-
-skinparam linetype ortho
-
-skinParam conditionStyle inside
-
-start
-repeat :read file;
-    repeat :read line;
-        :Read any comment;
-        while (Has unchecked flag?)
-            if (Match line start?) then (true)
-                :Parse line &
-                Save line content repr;
-                break
-            endif
-        endwhile
-        if (Matched no flag?) then (true)
-            :Check special cases;
-        endif
-    repeat while (Has unread line?) is (true)
-repeat while (Has unread file?) is (true)
-stop
+include::resources/uml/plantuml_skinparam.puml[]
+include::resources/uml/eos_header_parsing_loop.puml[]
 @enduml
 ----
-
-// [plantuml, format=svg]
-// ----
-// @startuml
-// skinparam backgroundColor transparent
-// skinParam ActivityStartColor blue
-// skinParam ActivityEndColor blue
-// skinParam arrowColor lightblue
-// skinParam arrowFontColor lightblue
-// skinParam activityDiamondBackgroundColor lawngreen
-
-// (*) -right-> "Read file"
-// -right-> "Read line"
-// -right-> if Line is comment then
-//   -right->[true] "Read comment lines"
-//   -right-> move to next line
-//   -down-> "Get unchecked flag from flags list"
-// else
-//   -down->[false] "Get unchecked flag from flags list"
-// endif
-// if Match line start then
-//   -down->[true] "Parse line"
-//   -down-> Save line content repr
-//   --> ===B1===
-// else
-//   -left->[fail] if "has unchecked flag" then
-//     -up->[loop] "Get unchecked flag from flags list" 
-//   else
-//     -right->[exhausted flags] "Check special cases"
-//     --> ===B1===
-//   endif
-// endif
-// ===B1=== -down-> if has unread line then
-//   -up->[true] Read line
-// else
-// endif
-// -->[false] if has unread file then
-//   -up->[true] Read file
-// else
-// endif
-// -right->[false] Generate spec content
-// -right-> Dump as JSON
-// -right-> (*)
-// @enduml
-// ----
 
 [.notes]
 --

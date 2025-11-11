@@ -1,0 +1,17 @@
+
+participant Process #99FF99
+Process -> call_callback: Call
+participant data #cc5555
+call_callback -> data: Instanciate
+activate data #FFBBBB
+call_callback -> api_setup_callback: Call
+api_setup_callback -> api_setup_callback: Save data reference
+api_setup_callback -> call_callback: Return
+call_callback -> data: Free python variable
+call_callback -> Process: Return
+Process -> api_tick: Call
+api_tick -> callback: Call with data reference
+destroy data
+callback -> callback: Check & Print
+callback -> api_tick: Return
+api_tick -> Process: Return

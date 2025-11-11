@@ -1,0 +1,11 @@
+
+skinparam BackgroundColor transparent
+skinParam ActivityStartColor lightblue
+skinParam ActivityStopColor lightblue
+skinParam ArrowColor lightblue
+skinParam ArrowFontColor lightblue
+skinParam DefaultTextAlignment center
+skinParam sequenceLifeLineBorderColor lightblue
+skinparam LegendBackgroundColor lightgray
+
+skinParam conditionStyle inside

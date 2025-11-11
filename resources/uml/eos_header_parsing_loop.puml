@@ -1,0 +1,17 @@
+start
+repeat :read file;
+    repeat :read line;
+        :Read any comment;
+        while (Has unchecked flag?)
+            if (Match line start?) then (true)
+                :Parse line &
+                Save line content repr;
+                break
+            endif
+        endwhile
+        if (Matched no flag?) then (true)
+            :Check special cases;
+        endif
+    repeat while (Has unread line?) is (true)
+repeat while (Has unread file?) is (true)
+stop
