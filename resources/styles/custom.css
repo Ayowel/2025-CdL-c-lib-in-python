@@ -18,10 +18,26 @@
     line-height: 1.3em;
 }
 
+.listingblock.ctypes::before {
+    content: "ctypes";
+    color: pink;
+}
+.listingblock.cffi::before {
+    content: "cffi";
+    color: aqua;
+}
+
+.listingblock::before {
+    position: absolute;
+    margin-top: -15px;
+    font-size: 12px;
+    margin-left: 48px;
+    left: 0;
+}
+
 .ctypes code {
     border-left: 3px solid pink;
 }
-
 .cffi code {
     border-left: 3px solid aqua;
 }
