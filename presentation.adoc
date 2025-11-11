@@ -1,15 +1,11 @@
 = C library integration in Python
 include::.asciidoctorconfig[]
 
-ifndef::live-presentation[]
-== !
-
-This is a RevealJS presentation:
-
-* Press `S` for presentation notes
-* Press `Space` or `PageDown` to change slide
-* Press `Escape` to get a global view
-endif::live-presentation[]
+ifdef::initial-content[]
+ifeval::["{initial-content}" != ""]
+include::{initial-content}[]
+endif::[]
+endif::initial-content[]
 
 == What can we get fom the lib's binary ?
 

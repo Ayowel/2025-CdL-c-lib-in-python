@@ -2,3 +2,4 @@
 :revealjsdir: https://cdn.jsdelivr.net/npm/reveal.js@5.2.1
 :source-highlighter: highlight.js
 :customcss: resources/styles/custom.css
+:initial-content: ./content/usage.adoc
