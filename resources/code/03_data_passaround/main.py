@@ -34,9 +34,11 @@ def api_python_callback(event, data):
         print(f'Received event {event} with NO data.')
 # end::api_callback_function[]
 
+print("tag::api_tick_only[]")
 # tag::api_tick_only[]
 dll.api_tick()
 # end::api_tick_only[]
+print("end::api_tick_only[]")
 
 print("tag::api_tick_cb[]")
 # tag::api_tick_cb[]
