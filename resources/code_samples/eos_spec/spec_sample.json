@@ -1,0 +1,15 @@
+{ "metadata": {}, "callback_methods": [], "defines": [],
+  "enums": [], "structs": [], "typedefs": [],
+  "functions": [{
+      "comment": "Check whether or not the given Epic Account ID is considered valid\nNOTE: This will return true for any EOS_EpicAccountId created with EOS_EpicAccountId_FromString as there is no validation\n\n@param AccountId The Epic Account ID to check for validity\n@return EOS_TRUE if the EOS_EpicAccountId is valid, otherwise EOS_FALSE",
+      "methodname_flat": "EOS_EpicAccountId_IsValid",
+      "params": [
+        {
+          "name": "AccountId",
+          "type": "EOS_EpicAccountId"
+        }
+      ],
+      "returntype": "EOS_Bool",
+      "source": "eos_common.h"
+  }]
+}

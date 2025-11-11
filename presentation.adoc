@@ -747,65 +747,31 @@ Finally, some of the `*_deprecated.inl` files actually have to be loaded as they
 
 [source, py]
 ----
-# Load all header files
-files_index = build_header_file_index(dir_path)
-# Pick a read order for the header files
-files_order = build_file_read_order(files_index)
+include::resources/code_samples/eos_spec/script_build_load.py[tag=indexation]
 ----
 
 [source, py]
 ----
-# Overwride eos_base as it mostly provides hard-to-parse definitions.
-assert 'eos_base.h' in files_order
-files_index['eos_base.h'] = [
-    'typedef int32_t EOS_Bool;',
-    '#define EOS_TRUE ((EOS_Bool)1)',
-    '#define EOS_FALSE ((EOS_Bool)0)',
-]
+include::resources/code_samples/eos_spec/script_build_load.py[tag=eos_base_overwride]
 ----
 
 === Parse lib entries
 
 [source, h]
 ----
-/** Successful result. no further error processing needed */
-EOS_RESULT_VALUE(EOS_Success, 0)
+include::resources/code_samples/eos_sdk/eos_results.h[]
 ----
 
 [source%step, py]
 ----
-def parse_result_value(content, i, line, comment = '', file = ''):
-    """Extract an EOS_RESULT enum value from a list of lines"""
-    _ = (content, file)
-    valinfo = re.match('^EOS_RESULT_VALUE(_LAST)?\\((?P<name>[a-zA-Z0-9_]+), (?P<value>[x0-9A-F]+)\\)$', line)
-    assert valinfo
-    name = valinfo['name'].strip()
-    value = valinfo['value'].strip()
-    return (i, OrderedDict(
-        comment = comment,
-        name = name,
-        value = value
-    ))
+include::resources/code_samples/eos_spec/script_build_load.py[tag=eos_result_parse]
 ----
 
 === Entries parse index
 
 [source, py]
 ----
-flags = [
-    ('EOS_DECLARE_FUNC', parse_function, partial(assert_insert, functions, 'methodname_flat')),
-    ('EOS_DECLARE_CALLBACK', parse_callback, partial(assert_insert, callbacks, 'callbackname')),
-    ('EOS_STRUCT', parse_struct, partial(assert_insert, structs, 'struct')),
-    ('EOS_RESULT_VALUE', parse_result_value, partial(assert_insert, SCOPED_ENUMS['EOS_EResult'], 'name')),
-    ('PROCESS_CATEGORY', parse_log_enum_value, partial(assert_insert, SCOPED_ENUMS['EOS_ELogCategory'], 'name')),
-    ('EOS_ENUM_START', parse_enum_start_end, partial(assert_insert, enums, 'enumname')),
-    ('EOS_ENUM_END', parse_enum_start_end, noop),
-    ('EOS_ENUM_BOOLEAN_OPERATORS', parse_skip_line, noop),
-    ('EOS_ENUM', parse_enum, partial(assert_insert, enums, 'enumname')),
-    ('#define', parse_define, partial(assert_insert_if, defines, DEFINES_IGNORE_LIST, 'name')),
-    (('typedef', 'EOS_EXTERN_C'), parse_typedef, partial(assert_insert, typedefs, 'name')),
-    (DIRECTIVES_IGNORE_LIST, absorb_directive, noop)
-]
+include::resources/code_samples/eos_spec/script_build_load.py[tag=line_start_flags]
 ----
 
 === Parsing loop
@@ -823,90 +789,78 @@ include::resources/uml/eos_header_parsing_loop.puml[]
 Special cases include EOS_UI_ preprocessor macros as they need additional context, and single-line comments which are ignored.
 --
 
+=== Resulting json
+
+[source, json]
+----
+include::resources/code_samples/eos_spec/spec_sample.json[]
+----
+
+[.notes]
+--
+This is a very limited example of what the JSON spec file looks like.
+The metadata field provides information on the current SDK version and its download source, while other fields provide lists of header file entries.
+--
+
 == Getting to the code generation
 
 === Load all entries
 
 [source, py]
 ----
-class Entry():
-    """A spec entry"""
-    def provides(self): # type: () -> List[str]
-        """Get the list of variables/types provided by this entry."""
-        return tuple()
-    def requires(self):
-        """Get the list of variables/types needed by this entry."""
-        return tuple()
-    def write(self, out, mapper):
-        """Write out an entry to the provided file handle."""
-        raise NotImplementedError()
-    def provides_defaults(self, mapper):
-        # type: (Mapper) -> Dict[str, str]
-        """Returns a dict of default values for the entry"""
-        _ = mapper
-        return {}
+include::resources/code_samples/eos_ext/entries.py[tag=entry]
 ----
 
-=== Resolve all entries' interdependenvies
+[.notes]
+--
+For generation, all entries in the spec file are mapped to specialized Entry subclasses depending on their type (function, typedef, struct, ...).
+Those classes provide dependency resolution information (via requires and provides) and a way to write the content of an object.
+--
+
+=== Resolve all entries' interdependencies
 
 [source, py]
 ----
-def requires(self):
-    if self.resolved_requires is None:
-        requires = []
-        if re.match(r'^("[^"]+"|-?[0-9]+|0x[0-9a-fA-F]+|0o[0-7]+)$', self.expression) is None:
-            req_list = re.findall(r'[A-Z][a-zA-Z0-9_]+', self.expression)
-            for r in req_list:
-                if r != 'NULL':
-                    requires.append(r)
-        self.resolved_requires = requires
-    return self.resolved_requires
+include::resources/code_samples/eos_ext/entries.py[tag=function_decl]
+
+include::resources/code_samples/eos_ext/entries.py[tag=function_requires]
+
+include::resources/code_samples/eos_ext/entries.py[tag=function_provides]
+
+    # ...
 ----
+
+[.notes]
+--
+As an example, the FunctionEntry Entry subclass requires the function's parameter types and return value's type and provides the function's name.
+--
 
 === Associate structs and functions
 
-[source, py]
+[source, h]
 ----
-# Associate each function to its corresponding class
-for funcname, function in functions_index.items():
-    base_split_name = funcname.split('_')
-    for i in range(2, len(base_split_name))[::-1]:
-        found = False
-        # Match from the function's name or from its "handle" version
-        for split_name in (base_split_name[:i], (base_split_name[0], f'H{base_split_name[1]}', *base_split_name[2:i])):
-            contextname = '_'.join(split_name)
-            if contextname in enum_types_structs_index:
-                obj = enum_types_structs_index[contextname]
-                local_name = '_'.join(base_split_name[i:])
-                is_static = contextname in function.returntype
-                obj.add_function(function, local_name, is_static)
-                found = True
-                break
-        if found:
-            break
-    else:
-        logger.info('No context object found for function %s.', funcname)
+EOS_DECLARE_FUNC(void) EOS_Achievements_QueryDefinitions(EOS_HAchievements Handle, const EOS_Achievements_QueryDefinitionsOptions* Options, void* ClientData, const EOS_Achievements_OnQueryDefinitionsCompleteCallback CompletionDelegate);
 ----
+
+[plantuml%step%autofit, format=svg]
+----
+include::resources/uml/plantuml_skinparam.puml[]
+include::resources/uml/ext_function_mapping.puml[]
+----
+
+[.notes]
+--
+As Python supports OOP while C does not, we want to be able to use the mapped structs as regular objects and call member functions instead of having to retrieve the corresponding functions manually every time.
+Epic Games functions that can be used as member functions start with the name of the associated object, however we only have handles for most objects (prefixed with H) and thus need to be able to mix & match.
+
+The matching logic splits the function's name on `_` then builds strings by joining subsets of the name's components, occasionally prefixing the second item with a `H` to match struct handles.
+--
 
 === Write entries in order
 
 [source, py]
 ----
-out.write(FILE_START)
-out.write('\n')
-# Add 'blank' function entries
-for e in self.file_entries:
-    if isinstance(e, FunctionEntry):
-        out.write(f'{e.name} = not_ready\n')
-# Write out every entry
-for e in self.file_entries:
-    if not isinstance(e, FunctionEntry):
-        e.write(out, self.mapper)
-# Load fuction pointers from dll
-out.write('def load(dll):\n')
-for e in self.file_entries:
-    if isinstance(e, FunctionEntry):
-        e.write(out, self.mapper)
+include::resources/code_samples/eos_ext/init.py[tag=render]
 ----
 
 [.notes]

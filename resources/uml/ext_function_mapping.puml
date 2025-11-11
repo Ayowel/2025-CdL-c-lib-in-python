@@ -1,0 +1,16 @@
+start
+repeat :get function;
+    :Split name on "_";
+    :Make name variant
+    with "H" prefix;
+    repeat :Build name substring;
+        if (Matches an object's name?) then (true)
+            :Associate function with object;
+            break
+        endif
+    repeat while (Has untested name substring?) is (false)
+    if (Matched no object?) then (true)
+        :Log function name;
+    endif
+repeat while (Has unchecked function?) is (true)
+stop
