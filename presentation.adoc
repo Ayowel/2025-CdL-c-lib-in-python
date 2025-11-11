@@ -430,7 +430,7 @@ ctypes.c_int * 3
 ctypes.c_int * 3 * 2
 --
 
-> <class '__main__.c_int_Array_3'>
+> <class '__main__.c_int_Array_3'> +
 > <class '__main__.c_int_Array_3_Array_2'>
 
 [source.ctypes, py]
