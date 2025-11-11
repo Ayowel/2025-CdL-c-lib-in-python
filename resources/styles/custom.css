@@ -9,6 +9,15 @@
     zoom: 80%;
 }
 
+.reveal .wrap .code-wrapper code {
+    text-wrap: inherit;
+}
+
+.reveal .small-code code {
+    font-size: 0.6em;
+    line-height: 1.3em;
+}
+
 .ctypes code {
     border-left: 3px solid pink;
 }

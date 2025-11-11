@@ -837,7 +837,7 @@ As an example, the FunctionEntry Entry subclass requires the function's paramete
 
 === Associate structs and functions
 
-[source, h]
+[source.wrap.small-code, h]
 ----
 EOS_DECLARE_FUNC(void) EOS_Achievements_QueryDefinitions(EOS_HAchievements Handle, const EOS_Achievements_QueryDefinitionsOptions* Options, void* ClientData, const EOS_Achievements_OnQueryDefinitionsCompleteCallback CompletionDelegate);
 ----
