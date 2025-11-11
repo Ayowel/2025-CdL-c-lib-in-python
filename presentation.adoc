@@ -929,7 +929,6 @@ for e in self.file_entries:
 
 [.notes]
 --
-On Fedora: , libffi-devel, libssl-devel
+On Fedora: libffi-devel, libssl-devel
 On Ubuntu: python3?-dev, libssl-dev, libffi-dev
 --
-
