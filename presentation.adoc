@@ -842,7 +842,7 @@ As an example, the FunctionEntry Entry subclass requires the function's paramete
 EOS_DECLARE_FUNC(void) EOS_Achievements_QueryDefinitions(EOS_HAchievements Handle, const EOS_Achievements_QueryDefinitionsOptions* Options, void* ClientData, const EOS_Achievements_OnQueryDefinitionsCompleteCallback CompletionDelegate);
 ----
 
-[plantuml%step%autofit, format=svg]
+[plantuml%step%autofit.zoom-70, format=svg]
 ----
 include::resources/uml/plantuml_skinparam.puml[]
 include::resources/uml/ext_function_mapping.puml[]

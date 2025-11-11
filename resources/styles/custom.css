@@ -2,6 +2,9 @@
     color: red;
 }
 
+.zoom-70 {
+    zoom: 70%;
+}
 .zoom-80 {
     zoom: 80%;
 }
