@@ -3,3 +3,4 @@
 :source-highlighter: highlight.js
 :customcss: resources/styles/custom.css
 :initial-content: ./content/usage.adoc
+:revealjs_defaultTiming: 30

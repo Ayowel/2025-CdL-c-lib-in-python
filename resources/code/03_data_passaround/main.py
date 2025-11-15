@@ -6,7 +6,9 @@ import os
 dll_path = f"{os.path.splitext(__file__)[0]}.so"
 dll = ctypes.CDLL(dll_path)
 
+# tag::api_callback_decl[]
 api_callback = ctypes.CFUNCTYPE(None, ctypes.c_uint32, ctypes.c_void_p)
+# end::api_callback_decl[]
 dll.api_setup_callback.argtypes = [api_callback, ctypes.c_void_p]
 dll.api_setup_callback.restype = None
 dll.api_tick.argtypes = []
