@@ -1,0 +1,21 @@
+{
+  "structs":  [{
+      "comment": "Input parameters for the EOS_Achievements_CopyAchievementDefinitionByIndex function.",
+      "fields": [
+        {
+          "comment": "API Version: Set this to EOS_ACHIEVEMENTS_COPYACHIEVEMENTDEFINITIONV2BYINDEX_API_LATEST.",
+          "name": "ApiVersion",
+          "recommended_value": "EOS_ACHIEVEMENTS_COPYACHIEVEMENTDEFINITIONV2BYINDEX_API_LATEST",
+          "type": "int32_t"
+        },
+        {
+          "comment": "Index of the achievement definition to retrieve from the cache.",
+          "name": "AchievementIndex",
+          "type": "uint32_t"
+        }
+      ],
+      "source": "eos_achievements_types.h",
+      "struct": "EOS_Achievements_CopyAchievementDefinitionV2ByIndexOptions"
+  }]
+}
+  

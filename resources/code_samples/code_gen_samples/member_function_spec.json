@@ -1,0 +1,21 @@
+{
+  "functions": [{
+    "methodname_flat": "EOS_Achievements_CopyAchievementDefinitionV2ByIndex",
+    "params": [
+    {
+      "name": "Handle",
+      "type": "EOS_HAchievements"
+    },
+    {
+      "name": "Options",
+      "type": "const EOS_Achievements_CopyAchievementDefinitionV2ByIndexOptions*"
+    },
+    {
+      "name": "OutDefinition",
+      "type": "EOS_Achievements_DefinitionV2 **"
+    }
+    ],
+    "returntype": "EOS_EResult",
+    "source": "eos_achievements.h"
+  }]
+}

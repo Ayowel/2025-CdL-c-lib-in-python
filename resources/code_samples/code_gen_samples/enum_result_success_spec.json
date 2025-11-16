@@ -1,0 +1,13 @@
+{
+  "enums": [{
+    "enumname": "EOS_EResult",
+    "values": [
+      {
+        "comment": "Successful result. no further error processing needed",
+        "name": "EOS_Success",
+        "value": "0"
+      }
+    ]
+  }]
+}
+  

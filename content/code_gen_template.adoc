@@ -1,0 +1,14 @@
+[source.small-code, h]
+--
+include::{code-source-path}_header.h[]
+--
+
+[source%step.small-code, json]
+--
+include::{code-source-path}_spec.json[]
+--
+
+[source%step.small-code.ctypes, py]
+--
+include::{code-source-path}_ctype.py[]
+--

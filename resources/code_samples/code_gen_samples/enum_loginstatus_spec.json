@@ -1,0 +1,14 @@
+{
+  "enums": [{
+    "comment": "All possible states of a local user\n\n@see EOS_Auth_AddNotifyLoginStatusChanged\n@see EOS_Auth_GetLoginStatus\n@see EOS_Auth_Login\n@see EOS_Connect_AddNotifyLoginStatusChanged\n@see EOS_Connect_GetLoginStatus\n@see EOS_Connect_Login",
+    "enumname": "EOS_ELoginStatus",
+    "source": "eos_common.h",
+    "values": [
+      {
+        "comment": "Player has not logged in or chosen a local profile",
+        "name": "EOS_LS_NotLoggedIn",
+        "value": "0"
+      }, ...
+    ]
+  }]
+}

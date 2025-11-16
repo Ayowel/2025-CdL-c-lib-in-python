@@ -1,0 +1,10 @@
+{
+  "defines": [{
+    "comment": "The most recent version of the EOS_Achievements_CopyAchievementDefinitionByIndexOptions struct.",
+    "expression": "2",
+    "name": "EOS_ACHIEVEMENTS_COPYACHIEVEMENTDEFINITIONV2BYINDEX_API_LATEST",
+    "parameters": null,
+    "source": "eos_achievements_types.h"
+  }]
+}
+  

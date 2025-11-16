@@ -1,0 +1,22 @@
+{
+  "functions": [{
+    "comment": "Fetches an achievement definition from a given index.\n\n@param Options Structure containing the index being accessed\n@param OutDefinition The achievement definition for the given index, if it exists and is valid, use EOS_Achievements_Definition_Release when finished\n\n@see EOS_Achievements_DefinitionV2_Release\n\n@return EOS_Success if the information is available and passed out in OutDefinition\nEOS_InvalidParameters if you pass a null pointer for the out parameter\nEOS_NotFound if the achievement definition is not found\nEOS_Invalid_ProductUserID if any of the userid options are incorrect",
+    "methodname_flat": "EOS_Achievements_CopyAchievementDefinitionV2ByIndex",
+    "params": [
+      {
+        "name": "Handle",
+        "type": "EOS_HAchievements"
+      },
+      {
+        "name": "Options",
+        "type": "const EOS_Achievements_CopyAchievementDefinitionV2ByIndexOptions*"
+      },
+      {
+        "name": "OutDefinition",
+        "type": "EOS_Achievements_DefinitionV2 **"
+      }
+    ],
+    "returntype": "EOS_EResult",
+    "source": "eos_achievements.h"
+  }]
+}

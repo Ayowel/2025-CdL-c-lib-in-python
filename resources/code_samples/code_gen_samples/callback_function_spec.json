@@ -1,0 +1,14 @@
+{
+  "callback_methods": [{
+    "callbackname": "EOS_Connect_OnLoginCallback",
+    "comment": "Function prototype definition for callbacks passed to EOS_Connect_Login.\n\n@param Data A EOS_Connect_LoginCallbackInfo containing the output information and result.",
+    "params": [
+      {
+        "name": "Data",
+        "type": "const EOS_Connect_LoginCallbackInfo*"
+      }
+    ],
+    "returntype": "void",
+    "source": "eos_connect_types.h"
+  }]
+}

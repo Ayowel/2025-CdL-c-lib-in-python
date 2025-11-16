@@ -1,0 +1,9 @@
+{
+    "enums": [{
+      "comment": "Enum flags for all possible result values of operations in the SDK.",
+      "enumname": "EOS_EResult",
+      "source": "eos_common.h",
+      "values": [...]
+    }]
+  }
+  

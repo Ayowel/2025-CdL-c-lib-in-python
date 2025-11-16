@@ -868,6 +868,48 @@ include::resources/code_samples/eos_ext/init.py[tag=render]
 15734 lines
 --
 
+== Code generation results
+
+=== Defines
+
+:code-source-path: ../resources/code_samples/code_gen_samples/define_copy_achievement
+include::content/code_gen_template.adoc[]
+
+=== Large enum types
+
+:code-source-path: ../resources/code_samples/code_gen_samples/enum_result_type
+include::content/code_gen_template.adoc[]
+
+=== Large enum values
+
+:code-source-path: ../resources/code_samples/code_gen_samples/enum_result_success
+include::content/code_gen_template.adoc[]
+
+=== Regular enum types
+
+:code-source-path: ../resources/code_samples/code_gen_samples/enum_loginstatus
+include::content/code_gen_template.adoc[]
+
+=== Parameter structs
+
+:code-source-path: ../resources/code_samples/code_gen_samples/struct
+include::content/code_gen_template.adoc[]
+
+=== Functions
+
+:code-source-path: ../resources/code_samples/code_gen_samples/functions
+include::content/code_gen_template.adoc[]
+
+=== Struct member functions
+
+:code-source-path: ../resources/code_samples/code_gen_samples/member_function
+include::content/code_gen_template.adoc[]
+
+=== Callback functions
+
+:code-source-path: ../resources/code_samples/code_gen_samples/callback_function
+include::content/code_gen_template.adoc[]
+
 == With cffi
 
 // https://runebook.dev/en/articles/python/library/ctypes/ctypes._CData._objects
