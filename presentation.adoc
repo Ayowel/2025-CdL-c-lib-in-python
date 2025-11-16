@@ -7,7 +7,13 @@ include::{initial-content}[]
 endif::[]
 endif::initial-content[]
 
-== What can we get fom the lib's binary ?
+//ifndef::hide-source-repo[]
+// == Sources
+
+// https://github.com/Ayowel/2025-CdL-c-lib-in-python
+// endif::hide-source-repo[]
+
+== What can we get fom a lib's binary ?
 
 === Defines
 
@@ -157,41 +163,16 @@ include::resources/code/00_simple_lib/main.py[tag=cffi_build]
 
 [.notes]
 --
-As long as you know the path of the .dll or .so file for your system, loading said DLL in-memory for use by your program is as simple as a single function call.
+As long as you know the path of the .dll or .so file for your system, loading said DLL in-memory for use by your program is as simple as a single function call with ctypes.
+
+With CFFI however, you must declare the methods and values you expect to use before loading the DLL.
+Those definitions are written in a header-like format with some limitations:
+
+The only supported preprocessor macro is #define and may only be used to define a raw integer value.
+Some modifiers such as const are not recognized.
 --
 
-=== Call it
-
-[source, c]
---
-include::resources/code/00_simple_lib/main.c[tag=function]
---
-
-[source.ctypes%step, py, indent=0]
---
-include::resources/code/00_simple_lib/main.py[tag=ctypes_funccall]
---
-
-[source.cffi%step, py, indent=0]
---
-include::resources/code/00_simple_lib/main.py[tag=cffi_funccall]
---
-
-[quote%step]
---
-include::resources/code/00_simple_lib/main.out[tag=ctypes_funccall]
---
-
-[.notes]
---
-Getting back to our library's hello function, now that we know how to load a DLL, we can call it.
-
-For functions, simply use the function names to easily call parameters-less functions.
-
-This will result in the expected message being written to the CLI.
---
-
-=== Read it?
+=== Read DLL value with ctypes?
 
 [source, c]
 --
@@ -217,7 +198,7 @@ Thus, if we try to print the value directly, we will not get the expected result
 Instead of a value, we end-up with a function pointer - not quite what we expected.
 --
 
-=== Read it!
+=== Read DLL value
 
 [source.ctypes, py, indent=0]
 --
@@ -252,16 +233,45 @@ Most native types are available in `ctypes` with the `c_` prefix.
 
 Note that another more complicated but sometimes usefull way to reference is to explicitly cast an arbitrary value (here, the function pointer) to another type (here an `int` pointer).
 
-The result in this case is a native Python int instead of a `c_int` instance du to the array value access, one of the free footguns that come with ctypes, though its use is fairly straightforward.
+The result in this case is a native Python int instead of a `c_int` instance due to the array value access, one of the free footguns that come with ctypes, though its use is fairly straightforward.
 --
 
-== C definitions in python
+=== Simple function call
 
-Who is ABI?
+[source, c]
+--
+include::resources/code/00_simple_lib/main.c[tag=function]
+--
+
+[source.ctypes%step, py, indent=0]
+--
+include::resources/code/00_simple_lib/main.py[tag=ctypes_funccall]
+--
+
+[source.cffi%step, py, indent=0]
+--
+include::resources/code/00_simple_lib/main.py[tag=cffi_funccall]
+--
+
+[quote%step]
+--
+include::resources/code/00_simple_lib/main.out[tag=ctypes_funccall]
+--
 
 [.notes]
 --
-The Application Binary Interface is 
+Getting back to our library's hello function, we can call it directly.
+
+For functions, simply use the function names to easily call parameters-less functions.
+
+This will result in the expected message being written to the CLI.
+--
+
+== C function definitions in python
+
+[.notes]
+--
+As the CFFI directly parses C definitions, this section is mostly about matching C functions definitions with ctypes.
 --
 
 === Simple call with parameters - int
@@ -403,43 +413,62 @@ Once this is done, ctypes becomes better at implicitely mapping provided values 
 [source.ctypes, py]
 --
 from ctypes import (
-    Array, Structure, Union, CFUNCTYPE, POINTER,
+    Array, Structure, Union, CFUNCTYPE, POINTER, c_int,
     c_int16, c_int32, c_int64, c_uint16, c_uint32, c_uint64,
     c_char, c_char_p, c_void_p, c_float, c_double, c_size_t,
 )
+char_value = c_char(b'A') # Instanciate with value b'A' (or 65)
+char_value = c_int(5) # Instanciate with value 5
 --
 
 [source.cffi%step, py]
 --
 from cffi import FFI
 ffi = FFI()
+char_value = ffi.new('char*', b'A') # Single instance pointer
+int_value = ffi.new('int[]', 1) # Array of size 1
+int_value[0] = 5 # Set value to 5
 --
-//data_pointer = ffi.open('MyType *')
 
 [.notes]
 --
-ctypes provides numerous base classes for C types that can be instanciated 
+ctypes provides numerous base classes for C types that can be instanciated.
+
+To do the same thing with CFFI, call `new` with the desired object.
+CFFI only allows to instanciate arrays of values.
+If the instanciated struct is an explicit struct pointer instead of a sized array, the struct's fields will also be available and modifiable from its pointer reference.
 --
 
-=== Array types
-
-[source.ctypes, py]
---
-# Fixed-size array
-ctypes.c_int * 3
-ctypes.c_int * 3 * 2
---
-
-> <class '__main__.c_int_Array_3'> +
-> <class '__main__.c_int_Array_3_Array_2'>
+=== Array instanciation
 
 [source.ctypes, py]
 --
-# Array instanciation
-(ctypes.c_int * 3)()
+(ctypes.c_int * 3)(1,2,3)
+(ctypes.c_int * 3 * 2)((1,2,3), (4,5,6))
 --
 
+[%step]
 > <__main__.c_int_Array_3 object at 0x7f309b70bdd0>
+> <__main__.c_int_Array_3_Array_2 object at 0x7f4f82303350>
+
+[source.cffi%step, py]
+--
+ffi.new('int[3]', (1,2,3))
+ffi.new('int[2][3]', ((1,2,3),(4,5,6)))
+--
+
+[%step]
+> <cdata 'int[3]' owning 12 bytes>
+> <cdata 'int[2][3]' owning 24 bytes>
+
+[.notes]
+--
+Array instanciation in ctypes relies on on-the-fly generation of meta classes that wrap the effective size of the array.
+In the example, we create and instanciate an array of 3 ints, then an array of 2 arrays of 3 ints.
+
+In CFFI, we can directly specify the array's size in the string provided to new.
+If the size is not set in the string, the second parameter is expected to be the size of the array, which will then have to be initialized manually.
+--
 
 === Pointer types
 
@@ -449,15 +478,37 @@ ctypes.c_int * 3 * 2
 ctypes.POINTER(ctypes.c_int)
 --
 
+[%step]
 > <class '__main__.LP_c_int'>
 
-[source.ctypes, py]
+[source.ctypes%step, py]
 --
 # Light pointer
 ctypes.byref(ctypes.c_int)
 --
 
+[%step]
 > <cparam 'P' (0x7fb3d7a82da0)>
+
+[.notes]
+--
+To use an explicit uninitialized pointer in ctypes:
+Either use the POINTER class, which will create a new class to wrap the provided type and can be manipulated directly (this is what should be used when defining c functions' parameter types and return values)
+Or use the byref method, which will return a light pointer that can be used as function parameter.
+--
+
+=== Functions
+
+[source, h]
+--
+include::resources/code/01_function_with_parameters/main.h[tag=ctypes_double_float]
+--
+
+[source.ctypes, py]
+--
+include::resources/code/01_function_with_parameters/main.py[tag=ctypes_double_float_return_type]
+include::resources/code/01_function_with_parameters/main.py[tag=ctypes_double_float_arg_type]
+--
 
 === Typedefs
 
@@ -465,6 +516,7 @@ ctypes.byref(ctypes.c_int)
 --
 typedef void* MyHandle;
 typedef struct InternalStruct* InternalStructP;
+typedef int* Counter;
 --
 
 [source.ctypes, py]
@@ -472,9 +524,30 @@ typedef struct InternalStruct* InternalStructP;
 MyHandle = ctypes.c_void_p
 class InternalStructP(ctypes.c_void_p):
   pass
+class Counter(ctypes.POINTER(ctypes.c_int)):
+  pass
 --
 
-=== Structs
+[.notes]
+--
+To translate typedefs in ctypes, either assign variables to the desired type, or create new class instances (which usually results in easier debugging and clearer traces). 
+--
+
+=== Callbacks
+
+[source, h]
+--
+include::resources/code/03_data_passaround/main.h[tag=api_callback]
+--
+
+[source.ctypes, py]
+--
+include::resources/code/03_data_passaround/main.py[tag=api_callback_decl]
+include::resources/code/03_data_passaround/main.py[tag=api_callback_function]
+--
+
+
+=== Structures
 
 [source, h]
 --
@@ -492,6 +565,11 @@ linked_list._fields_ = [
     ]
 
 l = linked_list(next=ctypes.pointer(linked_list(value=3)))
+--
+
+[.notes]
+--
+
 --
 
 === Packing
@@ -573,19 +651,19 @@ Things to be aware of when writing code that interacts
 
 === Code example
 
-[source, h]
+[source.small-code, h]
 --
 include::resources/code/03_data_passaround/main.h[tag="api_tick"]
 include::resources/code/03_data_passaround/main.h[tag="api_callback"]
 include::resources/code/03_data_passaround/main.h[tag="api_setup_callback"]
 --
 
-[source%step, python]
+[source.small-code%step, py]
 --
 include::resources/code/03_data_passaround/main.py[tag="api_callback_function"]
 --
 
-[source%step, python]
+[source.small-code%step, py]
 --
 include::resources/code/03_data_passaround/main.py[tag="api_tick_cb"]
 --
@@ -597,7 +675,19 @@ include::resources/code/03_data_passaround/main.out[tag="api_tick_cb"]
 
 === !
 
-[source, python]
+[source.small-code, h]
+--
+include::resources/code/03_data_passaround/main.h[tag="api_tick"]
+include::resources/code/03_data_passaround/main.h[tag="api_callback"]
+include::resources/code/03_data_passaround/main.h[tag="api_setup_callback"]
+--
+
+[source.small-code, py]
+--
+include::resources/code/03_data_passaround/main.py[tag="api_callback_function"]
+--
+
+[source.small-code%step, py]
 --
 include::resources/code/03_data_passaround/main.py[tag="api_tick_data"]
 --
@@ -607,12 +697,26 @@ include::resources/code/03_data_passaround/main.py[tag="api_tick_data"]
 include::resources/code/03_data_passaround/main.out[tag="api_tick_data"]
 --
 
-[source%step, python]
+=== !
+
+[source.small-code, h]
+--
+include::resources/code/03_data_passaround/main.h[tag="api_tick"]
+include::resources/code/03_data_passaround/main.h[tag="api_callback"]
+include::resources/code/03_data_passaround/main.h[tag="api_setup_callback"]
+--
+
+[source.small-code, py]
+--
+include::resources/code/03_data_passaround/main.py[tag="api_callback_function"]
+--
+
+[source.small-code%step, py]
 --
 include::resources/code/03_data_passaround/main.py[tag="call_callback_function"]
 --
 
-[source%step, python]
+[source.small-code%step, py]
 --
 include::resources/code/03_data_passaround/main.py[tag="call_callback"]
 --
@@ -643,10 +747,10 @@ include::resources/uml/memalloc_issue.puml[]
 
 [%step]
 * 64 typedefs
-* 71 enums
+* 73 enums
 * 190 callbacks
-* 626 functions
-* 687 defines
+* 628 functions
+* 685 defines
 * 705 structures
 
 [.big%step]
@@ -657,7 +761,7 @@ Not manually.
 
 [.notes]
 --
-The counts are for the library in version 1.17.0.3.
+The counts are for the library in version 1.18.1.2.
 --
 
 === The target
@@ -724,7 +828,7 @@ Additionally, we want to keep comment information as they indicate which values 
 
 == Getting to the intermediate representation
 
-=== The lib's headers
+=== List of the lib's headers
 
 [plantuml, format=svg]
 ----
@@ -743,7 +847,7 @@ Another noteworthy file is `eos_base.h`, which contains all structural preproces
 Finally, some of the `*_deprecated.inl` files actually have to be loaded as they are still referenced in functions headers.
 --
 
-=== Load the lib includes
+=== Load the lib's headers
 
 [source, py]
 ----
@@ -752,7 +856,7 @@ include::resources/code_samples/eos_spec/script_build_load.py[tag=indexation]
 
 [source, py]
 ----
-include::resources/code_samples/eos_spec/script_build_load.py[tag=eos_base_overwride]
+include::resources/code_samples/eos_spec/script_build_load.py[tag=eos_base_override]
 ----
 
 === Parse lib entries
@@ -776,7 +880,7 @@ include::resources/code_samples/eos_spec/script_build_load.py[tag=line_start_fla
 
 === Parsing loop
 
-[plantuml%autofit.zoom-80, format=svg]
+[plantuml%autofit, format=svg]
 ----
 @startuml
 include::resources/uml/plantuml_skinparam.puml[]
@@ -910,11 +1014,27 @@ include::content/code_gen_template.adoc[]
 :code-source-path: ../resources/code_samples/code_gen_samples/callback_function
 include::content/code_gen_template.adoc[]
 
-== With cffi
+== A bit more on cffi
+
+=== Resolve defines in headers
+
+[source, sh]
+--
+gcc -E path/to/header.h
+--
+
+[.notes]
+--
+Using -E will result in GCC displaying the code after preprocessing : all define AND include macros will be resolved, you should then have the ability to copy/paste valid declarations from your desired header files from the output.
+
+To display comments in the output, add the option `-C`.
+
+To display the original defines, enable debugging and their display with `-dD`.
+--
 
 // https://runebook.dev/en/articles/python/library/ctypes/ctypes._CData._objects
 
-=== Dependencies
+=== C python modules dependencies
 
 * python headers
 * ffi headers
@@ -923,4 +1043,31 @@ include::content/code_gen_template.adoc[]
 --
 On Fedora: libffi-devel, libssl-devel
 On Ubuntu: python3?-dev, libssl-dev, libffi-dev
+
+The recommended usage of CFFI relies on the generation of c python modules instead of loading a DLL dynamically.
+To use this, a compiler must be installed on the host as well as several headers (amongst which figure the header files for the current/target python version).
 --
+
+=== C python module compilation
+
+[source, h]
+--
+include::resources/code/04_cffi_api/main.h[]
+--
+
+[source.cffi%step, py]
+--
+include::resources/code/04_cffi_api/main.py[tag=cffi_compile]
+--
+
+[source.cffi%step, py]
+--
+include::resources/code/04_cffi_api/main.py[tag=cffi_use]
+--
+
+[quote%step]
+--
+include::resources/code/04_cffi_api/main.out[tag=cffi_use]
+--
+
+== Thank you

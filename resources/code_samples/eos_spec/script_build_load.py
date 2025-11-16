@@ -7,15 +7,15 @@ files_index = build_header_file_index(dir_path)
 files_order = build_file_read_order(files_index)
 # end::indexation[]
 
-# tag::eos_base_overwride[]
-# Overwride eos_base as it mostly provides hard-to-parse definitions.
+# tag::eos_base_override[]
+# Override eos_base as it mostly provides hard-to-parse definitions.
 assert 'eos_base.h' in files_order
 files_index['eos_base.h'] = [
     'typedef int32_t EOS_Bool;',
     '#define EOS_TRUE ((EOS_Bool)1)',
     '#define EOS_FALSE ((EOS_Bool)0)',
 ]
-# end::eos_base_overwride[]
+# end::eos_base_override[]
 
 # tag::eos_result_parse[]
 def parse_result_value(content, i, line, comment = '', file = ''):
